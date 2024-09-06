@@ -99,4 +99,4 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
   * Insight
     - VI가 채널을 획득했을 때 obtain하는 시간은 4.096ms 이다. (EDCA 표준에 근거하여)
-    - 졸리다....
+    - STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다르다 (즉, A-MPDU ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용한다.)
