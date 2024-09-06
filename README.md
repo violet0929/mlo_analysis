@@ -76,39 +76,39 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     ++ 6.138ms
   * 1.024648s, STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신 (latency: 6.138ms)
   ++ 0.148ms
-  3. 1.024796s, STA2->AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신  
+  * 1.024796s, STA2->AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신  
   ++ 4.062ms
-  4. 1.028858s, STA1->AP (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 송신  
+  * 1.028858s, STA1->AP (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 송신  
   ++ 4.136ms
-  5. 1.032994s, STA1->AP (AC_VI, A-MPDU ID 36: #87 ~ #115) 패킷 송신  
+  * 1.032994s, STA1->AP (AC_VI, A-MPDU ID 36: #87 ~ #115) 패킷 송신  
   ++ 2.001ms
-  6. 1.034995s, STA1에서 전송된 (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 수신 (latency: 6.137ms)  
+  * 1.034995s, STA1에서 전송된 (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 수신 (latency: 6.137ms)  
   ++ 2.153ms
-  7. 1.037148s, STA1->AP (AC_VI, A-MPDU ID 37: #116 ~ #144) 패킷 송신  
+  * 1.037148s, STA1->AP (AC_VI, A-MPDU ID 37: #116 ~ #144) 패킷 송신  
   ++ 1.983ms
-  8. 1.039131s, STA1에서 전송된 (AC_VI, A-MPDU ID 36: #87 ~ #115) 패킷 수신 (latency: 6.137ms)  
+  * 1.039131s, STA1에서 전송된 (AC_VI, A-MPDU ID 36: #87 ~ #115) 패킷 수신 (latency: 6.137ms)  
   ++ 2.162ms
-  9. 1.041293s, STA1->AP (AC_VI, A-MPDU ID 38: #145 ~ #173) 패킷 송신  
+  * 1.041293s, STA1->AP (AC_VI, A-MPDU ID 38: #145 ~ #173) 패킷 송신  
   ++ 1.992ms
-  10. 1.043285s, STA1에서 전송된 (AC_VI, A-MPDU ID 37: #116 ~ #144) 패킷 수신 (latency: 6.137ms)  
+  * 1.043285s, STA1에서 전송된 (AC_VI, A-MPDU ID 37: #116 ~ #144) 패킷 수신 (latency: 6.137ms)  
   ++ 2.172ms
-  11. 1.045457s, STA1->AP (AC_VI, A-MPDU ID 39: #174 ~ #202) 패킷 송신  
+  * 1.045457s, STA1->AP (AC_VI, A-MPDU ID 39: #174 ~ #202) 패킷 송신  
   ++ 1.974ms
-  12. 1.047431s, STA1에서 전송된 (AC_VI, A-MPDU ID 38: #145 ~ #173) 패킷 수신 (latency: 6.138ms)  
+  * 1.047431s, STA1에서 전송된 (AC_VI, A-MPDU ID 38: #145 ~ #173) 패킷 수신 (latency: 6.138ms)  
   ++ 3.823ms
-  13. 1.051254s, STA2->AP (AC_BE, A-MPDU ID 42: #234 ~ #272) 패킷 송신  
+  * 1.051254s, STA2->AP (AC_BE, A-MPDU ID 42: #234 ~ #272) 패킷 송신  
   ++ 5.436ms
-  14. 1.056690s, STA1->AP (AC_BE, A-MPDU ID 41: #39 ~ #77) 패킷 송신  
+  * 1.056690s, STA1->AP (AC_BE, A-MPDU ID 41: #39 ~ #77) 패킷 송신  
   ++ 5.625ms
-  15. 1.062315s, STA2->AP (AC_VI, A-MPDU ID 45: #538 ~ #565) 패킷 송신 (재전송)  
+  * 1.062315s, STA2->AP (AC_VI, A-MPDU ID 45: #538 ~ #565) 패킷 송신 (재전송)  
   ++ 1.885ms
-  16. 1.064200s, STA1에서 전송된 (AC_BE, A-MPDU ID 39: #39 ~ #77) 패킷 수신 (latency: 7.51ms)  
+  * 1.064200s, STA1에서 전송된 (AC_BE, A-MPDU ID 39: #39 ~ #77) 패킷 수신 (latency: 7.51ms)  
   ++ 2.285ms
-  17. 1.066485s, STA2->AP (AC_VI, A-MPDU ID 47: #566, #741 ~ #768) 패킷 송신 (부분 재전송)  
+  * 1.066485s, STA2->AP (AC_VI, A-MPDU ID 47: #566, #741 ~ #768) 패킷 송신 (부분 재전송)  
   ++ 1.831ms
-  18. 1.068316s, STA2에서 전송된 (AC_VI, A-MPDU ID 41: #538 ~ #565) 패킷 수신 (재전송 기준 latency: 6.001ms, 전송 기준: 43.52ms)  
+  * 1.068316s, STA2에서 전송된 (AC_VI, A-MPDU ID 41: #538 ~ #565) 패킷 수신 (재전송 기준 latency: 6.001ms, 전송 기준: 43.52ms)  
   ++ 4.306ms
-  19. 1.072622s, STA2에서 전송된 (AC_VI, A-MPDU ID 43: #566, #741 ~ #768) 패킷 수신  
+  * 1.072622s, STA2에서 전송된 (AC_VI, A-MPDU ID 43: #566, #741 ~ #768) 패킷 수신  
     * #566 재전송 기준 latency: 10.307ms, 전송 기준: 47.826ms)  
     * #741 ~ #768 latency: 6.137ms
 
