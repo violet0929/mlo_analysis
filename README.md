@@ -36,4 +36,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 
 ## Insight
+이 꽉깨물고 9월안에 무조건 끝낸다
 
+* 24.09.06 (1일차)
+  * 
