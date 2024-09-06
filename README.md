@@ -73,11 +73,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 1.066485 STA2->AP (AC_VI, A-MPDU ID 47: #566, #741 ~ #768) 패킷 송신 (부분 재전송)
    
   * 시간 순으로 나열해보면
-    1. 1.018510 STA1->AP (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 송신
+    (1). 1.018510 STA1->AP (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 송신
        + 6.138ms
-    2. 1.024648 STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신 (latency: 6.138ms)
+    (2). 1.024648 STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신 (latency: 6.138ms)
        + 0.148ms
-    3. 1.024796 STA2->AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
+    (3). 1.024796 STA2->AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
        + 4.062ms
     4. 1.028858 STA1->AP (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 송신
        + 4.136ms
