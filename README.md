@@ -71,7 +71,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 1.062315 STA2->AP (AC_VI, A-MPDU ID 45: #538 ~ #565) 패킷 송신 (재전송)
   * 1.066485 STA2->AP (AC_VI, A-MPDU ID 47: #566, #741 ~ #768) 패킷 송신 (부분 재전송)
    
-* 시간 순으로 나열해보면  
+* 시간 순으로 나열  
   1. 1.018510 STA1->AP (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 송신  
   ++ 6.138ms
   2. 1.024648 STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신 (latency: 6.138ms)  
@@ -112,17 +112,18 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
       - #566 재전송 기준 latency: 10.307ms, 전송 기준: 47.826ms)  
       - #741 ~ #768 latency: 6.137ms
 
-* 그림으로 나타내면
+* 그림
+  * STA에 표기되어 있는 번호는 A-MPDU ID를 나타냄
 ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
 
-  * Insight
-    1. STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다르다
-      - 근거: 14번 사건에서 STA2가 전송한 A-MPDU ID: 41, 16번 사건에서 AP가 수신한 A-MPDU ID: 39
-      - 예상컨데, A-MPDU ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용한다.
-      - 근거: 각 device 입장에서 보면 A-MPDU의 AC가 다르더라도 ID는 sequential하게 증가함
-      **- 정답: https://www.radiotap.org/fields/A-MPDU%20status.html**
-    2. 3번 사건에서 STA2가 전송한 패킷이 손실된 이유가 뭘까?
-      - 2번 사건과 3번 사건의 시간차는 0.148ms로 매우 낮음.
-      - 따라서, AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생함.
-      - 근거: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에
-      **- 정답: 교수님께 여쭤보기**
+* Insight
+  * STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다르다
+    * 근거: 14번 사건에서 STA2가 전송한 A-MPDU ID: 41, 16번 사건에서 AP가 수신한 A-MPDU ID: 39
+    * 예상컨데, A-MPDU ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용한다.
+    * 근거: 각 device 입장에서 보면 A-MPDU의 AC가 다르더라도 ID는 sequential하게 증가함
+    * 정답: https://www.radiotap.org/fields/A-MPDU%20status.html
+  * 3번 사건에서 STA2가 전송한 패킷이 손실된 이유가 뭘까?
+    * 2번 사건과 3번 사건의 시간차는 0.148ms로 매우 낮음.
+    * 따라서, AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생함.
+    * 근거: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에
+    * 정답: 교수님께 여쭤보기
