@@ -110,3 +110,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 근거: AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생함.
     * 근거: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에
     * 정답: 교수님께 여쭤보기
+   
+  * 39번 A-MPDU의 BA는 어디있지?
+    * 매우 중요!!! 
