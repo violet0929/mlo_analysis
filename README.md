@@ -44,7 +44,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * module/json2csv.py 함수 load_df에서 AP 데이터 기준 json에서 dataframe으로 변환이 안됨 -> uplink 통신이므로 구분을 위해 target 매개변수 값 추가
   * module/json2csv.py 구현 완료: pcap <-> json <-> csv 변환 완료
 
-  * link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건 분석 (1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷을 리스트업 해보면...)  
+  * 실험 환경: **topology** (1AP + 2STA), **distance** (10m), **Channel** (2.4GHz 20MHz + 5GHz 20MHz), **traffic flow** (uplink only), **data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)기반
+    link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석 (1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷을 리스트업 해보면...)  
   __* 1.024796 STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신__  
   __* 1.062315 STA2 -> AP #538 패킷 재전송__  
   __* 1.068316 AP STA2가 전송한 #538 패킷 수신__  
