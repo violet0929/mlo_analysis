@@ -116,7 +116,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * STA에 표기되어 있는 번호는 A-MPDU ID를 나타냄
 ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
 
-* Insight
+* 논의사항
   * STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다르다
     * 근거: 14번 사건에서 STA2가 전송한 A-MPDU ID: 41, 16번 사건에서 AP가 수신한 A-MPDU ID: 39
     * 예상컨데, A-MPDU ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용한다.
