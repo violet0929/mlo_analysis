@@ -40,4 +40,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 이 꽉깨물고 9월안에 무조건 끝낸다
 
 * 24.09.06 (1일차)
-  * 
+  * ns3 <-> analyzer 간 ip 동기화가 안맞음 -> AP가 192.168.1.1 / STA이 192.168.1.2 부터 할당되게 변경
+  * module/json2csv.py load_df function에서 AP 데이터 기준 josn에서 dataframe으로 변환이 안됨 -> uplink 통신이므로 구분을 위해 target 매개변수 값 추가
+  * pcap <-> json <-> csv 변환 완료
+  
