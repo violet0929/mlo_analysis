@@ -111,9 +111,9 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   19. 1.072622 STA2에서 전송된 (AC_VI, A-MPDU ID 43: #566, #741 ~ #768) 패킷 수신  
       - #566 재전송 기준 latency: 10.307ms, 전송 기준: 47.826ms)  
       - #741 ~ #768 latency: 6.137ms
-        
-  * 도표로 나타내면
-    ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
+
+* 그림으로 나타내면
+![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
 
   * Insight
     1. STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다르다
