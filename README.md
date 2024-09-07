@@ -73,7 +73,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
    
 * 시간 순으로 나열
   
-| No  | Time      | Description                  | AC  | A-MPDU ID | Wlan Seq          | Retry        |
+| No  | Time      | Description                  | AC  | A-MPDU ID | Wlan Seq #        | Retry        |
 | :-: | :-------: | :--------------------------: | :-: | :-------: | :---------------: | :----------: |
 | 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI  | 34        | #29 ~ #57         | -            |
 | 2   | 1.024648s | AP <- `STA1` receive A-MPDU  | VI  | 34        | #29 ~ #57         | -            |
@@ -89,12 +89,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 | 12  | 1.047431s | AP <- `STA1` received A-MPDU | VI  | 38        | #145 ~ #173       | -            |
 | 13  | 1.051254s | `STA2` -> AP transmit A-MPDU | BE  | 42        | #234 ~ #272       | -            |
 | 14  | 1.056690s | `STA1` -> AP transmit A-MPDU | BE  | 41        | #39 ~ #77         | -            |
-| 15  | 1.062315s | `STA2` -> AP transmit A-MPDU | VI  | 45        | #538 ~ #565       | All Tx       |
+| 15  | 1.062315s | `STA2` -> AP transmit A-MPDU | VI  | 45        | #538 ~ #565       | Totally Tx   |
 | 16  | 1.064200s | AP <- `STA1` received A-MPDU | VI  | 39        | #39 ~ #77         | -            |
 | 17  | 1.066485s | `STA2` -> AP transmit A-MPDU | VI  | 47        | #566, #741 ~ #768 | Partially Tx |
-| 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI  | 41        | #538 ~ #565       | All Rx       |
+| 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI  | 41        | #538 ~ #565       | Totally Rx   |
 | 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
-
 
 * 그림으로 표현
   * STA에 표기되어 있는 번호는 A-MPDU ID를 나타냄
@@ -116,4 +115,4 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 정답: 교수님께 여쭤보기
    
   * 39번 A-MPDU의 BA는 어디있지?
-    * 매우 중요!!! 
+    * 매우 중요!!! 이건 마지막에
