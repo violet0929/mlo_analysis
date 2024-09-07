@@ -72,7 +72,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 1.066485s, STA2->AP (AC_VI, A-MPDU ID 47: #566, #741 ~ #768) 패킷 송신 (부분 재전송)
    
 * 시간 순으로 나열
-  
+  * Need Tx -> A-MPDU가 모종의 원인으로 인해 손실되어 재전송이 필요한 경우
+  * Partially Tx/Rx -> 단일 A-MPDU에 재전송과 일반 전송에 해당하는 MPDU가 공존하는 경우
+  * Totally Tx/Rx -> 단일 A-MPDU에 포함된 모든 MPDU들이 재전송에 해당하는 경우
+
 | No  | Time      | Description                  | AC  | A-MPDU ID | Wlan Seq #        | Retry        |
 | :-: | :-------: | :--------------------------: | :-: | :-------: | :---------------: | :----------: |
 | 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI  | 34        | #29 ~ #57         | -            |
@@ -96,14 +99,15 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 | 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
 
 * 그림으로 표현
-  * STA에 표기되어 있는 번호는 A-MPDU ID를 나타냄
-  * 1 칸당 1ms를 의미함
-  * 시간은 소수점 아래 3번째 자리까지 표현 (이하 반올림)
-  ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
+  * 파란색 및 초록색 block에 표기되어 있는 번호는 A-MPDU ID를 나타냄
+  * 1 칸당 약 1ms를 의미함
+  * 가독성을 위해 시간은 소수점 아래 3번째 자리까지 표현 (이하 반올림)
+  
+ ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
 
 * 논의사항
   * STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다르다
-    * 근거: 1.057s 시점에서 STA2가 전송한 A-MPDU ID: 41, 1.064s 시점에서 AP가 수신한 A-MPDU ID: 39
+    * e.g., 1.057s 시점 (No. 14)에서 STA2가 전송한 A-MPDU ID: 41, 1.064s 시점 (No. 16)에서 AP가 수신한 A-MPDU ID: 39
     * 예상: A-MPDU ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용한다.
     * 근거: 각 device 입장에서 보면 A-MPDU의 AC가 다르더라도 ID는 sequential하게 증가함
     * 정답: https://www.radiotap.org/fields/A-MPDU%20status.html
@@ -113,6 +117,12 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 근거: AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생함.
     * 근거: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에
     * 정답: 교수님께 여쭤보기
-   
-  * 39번 A-MPDU의 BA는 어디있지?
+
+  * (중요!! 별표 3개) 특정 TXOP를 획득했을 때 송신한 A-MPDU에 포함된 wlan seq #와 수신한 BA의 wlan seq #는 다를 수 있다.
+    * EDCA 표준에 근거하여, VI TXOP Limit: 4.096ms임.
+    * 따라서, 1.032994s 시점 (No. 5)에 획득한 VI TXOP는 ~ 1.03709s 시점까지 유효 (i.e., 1.037148s 시점에 획득한 VI TXOP는 새로운 TXOP임)
+    * 수신받은 
+    * 송신 A-mpdu(#87 ~ #115) 와 수신 A-mpdu(#58 ~ #86) wlan seq #가 다름
+
+  * (중요!! 별표 5개) 39번 A-MPDU의 BA는 어디있지?
     * 매우 중요!!! 이건 마지막에
