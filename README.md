@@ -73,27 +73,27 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
    
 * 시간 순으로 나열
   
-| No  | Time      | Description                  | Access Category | A-MPDU ID | Wlan Seq          | Retry     |
-| :-: | :-------: | :--------------------------: | :-------------: | :-------: | :---------------: | :-------: |
-| 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI           | 34        | #29 ~ #57         | -         |
-| 2   | 1.024648s | AP <- `STA1` receive A-MPDU  | VI           | 34        | #29 ~ #57         | -         |
-| 3   | 1.024796s | `STA2` -> AP transmit A-MPDU | VI           | 36        | #538 ~ #566       | -         |
-| 4   | 1.028858s | `STA1` -> AP transmit A-MPDU | VI           | 35        | #58 ~ #86         | -         |
-| 5   | 1.032994s | `STA1` -> AP transmit A-MPDU | VI           | 36        | #87 ~ #115        | -         |
-| 6   | 1.034995s | AP <- `STA1` received A-MPDU | VI           | 35        | #58 ~ #86         | -         |
-| 7   | 1.037148s | `STA1` -> AP transmit A-MPDU | VI           | 37        | #116 ~ #144       | -         |
-| 8   | 1.039131s | AP <- `STA1` received A-MPDU | VI           | 36        | #87 ~ #115        | -         |
-| 9   | 1.041293s | `STA1` -> AP transmit A-MPDU | VI           | 38        | #145 ~ #173       | -         |
-| 10  | 1.043285s | AP <- `STA1` received A-MPDU | VI           | 37        | #116 ~ #144       | -         |
-| 11  | 1.045457s | `STA1` -> AP transmit A-MPDU | VI           | 39        | #174 ~ #202       | Y         |
-| 12  | 1.047431s | AP <- `STA1` received A-MPDU | VI           | 38        | #145 ~ #173       | -         |
-| 13  | 1.051254s | `STA2` -> AP transmit A-MPDU | BE           | 42        | #234 ~ #272       | -         |
-| 14  | 1.056690s | `STA1` -> AP transmit A-MPDU | BE           | 41        | #39 ~ #77         | -         |
-| 15  | 1.062315s | `STA2` -> AP transmit A-MPDU | VI           | 45        | #538 ~ #565       | Y         |
-| 16  | 1.064200s | AP <- `STA1` received A-MPDU | VI           | 39        | #39 ~ #77         | -         |
-| 17  | 1.066485s | `STA2` -> AP transmit A-MPDU | VI           | 47        | #566, #741 ~ #768 | Partially |
-| 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI           | 41        | #538 ~ #565       | Y         |
-| 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI           | 43        | #566, #741 ~ #768 | Partially |
+| No  | Time      | Description                  | AC  | A-MPDU ID | Wlan Seq          | Retry        |
+| :-: | :-------: | :--------------------------: | :-: | :-------: | :---------------: | :----------: |
+| 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI  | 34        | #29 ~ #57         | -            |
+| 2   | 1.024648s | AP <- `STA1` receive A-MPDU  | VI  | 34        | #29 ~ #57         | -            |
+| 3   | 1.024796s | `STA2` -> AP transmit A-MPDU | VI  | 36        | #538 ~ #566       | Need Tx      |
+| 4   | 1.028858s | `STA1` -> AP transmit A-MPDU | VI  | 35        | #58 ~ #86         | -            |
+| 5   | 1.032994s | `STA1` -> AP transmit A-MPDU | VI  | 36        | #87 ~ #115        | -            |
+| 6   | 1.034995s | AP <- `STA1` received A-MPDU | VI  | 35        | #58 ~ #86         | -            |
+| 7   | 1.037148s | `STA1` -> AP transmit A-MPDU | VI  | 37        | #116 ~ #144       | -            |
+| 8   | 1.039131s | AP <- `STA1` received A-MPDU | VI  | 36        | #87 ~ #115        | -            |
+| 9   | 1.041293s | `STA1` -> AP transmit A-MPDU | VI  | 38        | #145 ~ #173       | -            |
+| 10  | 1.043285s | AP <- `STA1` received A-MPDU | VI  | 37        | #116 ~ #144       | -            |
+| 11  | 1.045457s | `STA1` -> AP transmit A-MPDU | VI  | 39        | #174 ~ #202       | Need Tx      |
+| 12  | 1.047431s | AP <- `STA1` received A-MPDU | VI  | 38        | #145 ~ #173       | -            |
+| 13  | 1.051254s | `STA2` -> AP transmit A-MPDU | BE  | 42        | #234 ~ #272       | -            |
+| 14  | 1.056690s | `STA1` -> AP transmit A-MPDU | BE  | 41        | #39 ~ #77         | -            |
+| 15  | 1.062315s | `STA2` -> AP transmit A-MPDU | VI  | 45        | #538 ~ #565       | All Tx       |
+| 16  | 1.064200s | AP <- `STA1` received A-MPDU | VI  | 39        | #39 ~ #77         | -            |
+| 17  | 1.066485s | `STA2` -> AP transmit A-MPDU | VI  | 47        | #566, #741 ~ #768 | Partially Tx |
+| 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI  | 41        | #538 ~ #565       | All Rx       |
+| 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
 
 
 * 그림으로 표현
