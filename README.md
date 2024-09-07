@@ -75,7 +75,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   
 | No  | Time      | Description                | Access Category | A-MPDU ID | Wlan Seq          | Retry     |
 | :-: | :-------: | :------------------------: | :-------------: | :-------: | :---------------: | :-------: |
-| 1   | 1.018510s | STA1 -> AP transmit A-MPDU | AC_VI           | 34        | #29 ~ #57         | -         |
+| 1   | 1.018510s | `STA1 -> AP` transmit A-MPDU | AC_VI           | 34        | #29 ~ #57         | -         |
 | 2   | 1.024648s | AP <- STA1 received A-MPDU | AC_VI           | 34        | #29 ~ #57         | -         |
 | 3   | 1.024796s | STA2 -> AP transmit A-MPDU | AC_VI           | 36        | #538 ~ #566       | -         |
 | 4   | 1.028858s | STA1 -> AP transmit A-MPDU | AC_VI           | 35        | #58 ~ #86         | -         |
