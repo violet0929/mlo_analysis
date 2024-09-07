@@ -73,29 +73,28 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
    
 * 시간 순으로 나열
   
-| Time      | Description                | Access Category | A-MPDU ID | Wlan Seq  | Tx/Rx  |
-| :-------: | :------------------------: | :-------------: | :-------: | :-------: | :----: |
-| 1.018510s | STA1 -> AP transmit A-MPDU | AC_VI           | 34        | #29 ~ #57 | Tx     |
+| Time      | Description                | Access Category | A-MPDU ID | Wlan Seq          | Retry     |
+| :-------: | :------------------------: | :-------------: | :-------: | :---------------: | :-------: |
+| 1.018510s | STA1 -> AP transmit A-MPDU | AC_VI           | 34        | #29 ~ #57         | -         |
+| 1.024648s | AP <- STA1 received A-MPDU | AC_VI           | 34        | #29 ~ #57         | -         |
+| 1.024796s | STA2 -> AP transmit A-MPDU | AC_VI           | 36        | #538 ~ #566       | -         |
+| 1.028858s | STA1 -> AP transmit A-MPDU | AC_VI           | 35        | #58 ~ #86         | -         |
+| 1.032994s | STA1 -> AP transmit A-MPDU | AC_VI           | 36        | #87 ~ #115        | -         |
+| 1.034995s | AP <- STA1 received A-MPDU | AC_VI           | 35        | #58 ~ #86         | -         |
+| 1.037148s | STA1 -> AP transmit A-MPDU | AC_VI           | 37        | #116 ~ #144       | -         |
+| 1.039131s | AP <- STA1 received A-MPDU | AC_VI           | 36        | #87 ~ #115        | -         |
+| 1.041293s | STA1 -> AP transmit A-MPDU | AC_VI           | 38        | #145 ~ #173       | -         |
+| 1.043285s | AP <- STA1 received A-MPDU | AC_VI           | 37        | #116 ~ #144       | -         |
+| 1.045457s | STA1 -> AP transmit A-MPDU | AC_VI           | 39        | #174 ~ #202       | -         |
+| 1.047431s | AP <- STA1 received A-MPDU | AC_VI           | 38        | #145 ~ #173       | -         |
+| 1.051254s | STA2 -> AP transmit A-MPDU | AC_BE           | 42        | #234 ~ #272       | -         |
+| 1.056690s | STA1 -> AP transmit A-MPDU | AC_BE           | 41        | #39 ~ #77         | -         |
+| 1.062315s | STA2 -> AP transmit A-MPDU | AC_VI           | 45        | #538 ~ #565       | Y         |
+| 1.064200s | AP <- STA1 received A-MPDU | AC_VI           | 39        | #39 ~ #77         | -         |
+| 1.066485s | STA2 -> AP transmit A-MPDU | AC_VI           | 47        | #566, #741 ~ #768 | Partially |
+| 1.068316s | AP <- STA2 received A-MPDU | AC_VI           | 41        | #538 ~ #565       | Y         |
+| 1.072622s | AP <- STA2 received A-MPDU | AC_VI           | 43        | #566, #741 ~ #768 | Partially |
 
-  * 1.018510s, STA1->AP (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 송신  
-  * 1.024648s, STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신
-  * 1.024796s, STA2->AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신  
-  * 1.028858s, STA1->AP (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 송신  
-  * 1.032994s, STA1->AP (AC_VI, A-MPDU ID 36: #87 ~ #115) 패킷 송신  
-  * 1.034995s, STA1에서 전송된 (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 수신
-  * 1.037148s, STA1->AP (AC_VI, A-MPDU ID 37: #116 ~ #144) 패킷 송신  
-  * 1.039131s, STA1에서 전송된 (AC_VI, A-MPDU ID 36: #87 ~ #115) 패킷 수신
-  * 1.041293s, STA1->AP (AC_VI, A-MPDU ID 38: #145 ~ #173) 패킷 송신  
-  * 1.043285s, STA1에서 전송된 (AC_VI, A-MPDU ID 37: #116 ~ #144) 패킷 수신
-  * 1.045457s, STA1->AP (AC_VI, A-MPDU ID 39: #174 ~ #202) 패킷 송신  
-  * 1.047431s, STA1에서 전송된 (AC_VI, A-MPDU ID 38: #145 ~ #173) 패킷 수신
-  * 1.051254s, STA2->AP (AC_BE, A-MPDU ID 42: #234 ~ #272) 패킷 송신  
-  * 1.056690s, STA1->AP (AC_BE, A-MPDU ID 41: #39 ~ #77) 패킷 송신  
-  * 1.062315s, STA2->AP (AC_VI, A-MPDU ID 45: #538 ~ #565) 패킷 송신 (재전송)  
-  * 1.064200s, STA1에서 전송된 (AC_BE, A-MPDU ID 39: #39 ~ #77) 패킷 수신
-  * 1.066485s, STA2->AP (AC_VI, A-MPDU ID 47: #566, #741 ~ #768) 패킷 송신 (부분 재전송)  
-  * 1.068316s, STA2에서 전송된 (AC_VI, A-MPDU ID 41: #538 ~ #565) 패킷 수신
-  * 1.072622s, STA2에서 전송된 (AC_VI, A-MPDU ID 43: #566, #741 ~ #768) 패킷 수신  
 
 * 그림으로 표현
   * STA에 표기되어 있는 번호는 A-MPDU ID를 나타냄
