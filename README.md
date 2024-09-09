@@ -238,7 +238,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 <p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
 
   * 하나씩 순서대로 뜯자.
-  * ns3::ChannelAccessManager::AccessTimeout
+  * 1. ns3::ChannelAccessManager::AccessTimeout
 ```c
 void
 ChannelAccessManager::AccessTimeout()
@@ -251,7 +251,7 @@ ChannelAccessManager::AccessTimeout()
 ```
   * backoff update 말고 뭐 없다 패스
 
-  * (⭐중요) ns3::ChannelAccessManager::DoGrantDcfAccess
+  * (⭐중요) 2. ns3::ChannelAccessManager::DoGrantDcfAccess
 ```c
 void
 ChannelAccessManager::DoGrantDcfAccess()
@@ -340,7 +340,7 @@ ChannelAccessManager::DoGrantDcfAccess()
     * 구현 이슈인거 같음: 변경 사항을 획득한 txop의 전송 전에 적용하면 전역 변수 변경과 같은 문제 야기
   * 내부 경쟁이 끝나면 EDCAF에서 txop에 대한 전송을 시작함.
 
-  * ns3::EhtFrameExchangeManager::StartTransmission
+  * 3. ns3::EhtFrameExchangeManager::StartTransmission
 ```c
 bool
 EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
@@ -364,7 +364,7 @@ EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 예를 들어, 단일 RF에서 1s ~ 10s는 2.4GHz 대역에서 전송을 하고, 11s ~ 20s는 5GHz 대역에서 전송을 하는 것과 같음 (동시성 x)
   * 관련 없음. 패스.
 
-  * (⭐중요) ns3::QosFrameExchangeManager::StartTransmission
+  * 4. ns3::QosFrameExchangeManager::StartTransmission
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
@@ -387,10 +387,101 @@ QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
 
     m_allowedWidth = allowedWidth;
     auto qosTxop = StaticCast<QosTxop>(edca);
-    /*if (qosTxop->GetAccessCategory() == AC_VO)
-    {
-        NS_LOG_UNCOND("AC_VO");
-    }*/
     return StartTransmission(qosTxop, qosTxop->GetTxopLimit(m_linkId));
 }
 ```
+  * PCF: AP가 통신 관장, STA 들에게 데이터를 전송할 수 있는 기회 할당 (주로 EDCA, Real-time trafifc에서 사용하는 통신 방식)
+  * PIFS: DCF 모드가 아닌 PCF 모드에서 주로 사용되며, DCF 보다는 짧고, SIFS 보다는 길다.
+  * 언제 사용? PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
+  * 관련 없음. 패스
+
+  * (⭐매우 중요 여기가 거의 9할 이라고 해도 무방) 5. ns3::QosFrameExchangeManager::StartTransmission
+```c
+bool
+QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
+{
+    NS_LOG_FUNCTION(this << edca << txopDuration);
+
+    if (m_pifsRecoveryEvent.IsRunning())
+    {
+        // Another AC (having AIFS=1 or lower, if the user changed the default settings)
+        // gained channel access while performing PIFS recovery. Abort PIFS recovery
+        CancelPifsRecovery();
+    }
+
+    if (m_txTimer.IsRunning())
+    {
+        m_txTimer.Cancel();
+    }
+    m_dcf = edca;
+    m_edca = edca;
+
+    // We check if this EDCAF invoked the backoff procedure (without terminating
+    // the TXOP) because the transmission of a non-initial frame of a TXOP failed
+    bool backingOff = (m_edcaBackingOff == m_edca);
+
+    if (backingOff)
+    {
+        NS_ASSERT(m_edca->GetTxopLimit(m_linkId).IsStrictlyPositive());
+        NS_ASSERT(m_edca->IsTxopStarted(m_linkId));
+        NS_ASSERT(!m_pifsRecovery);
+        NS_ASSERT(!m_initialFrame);
+
+        // clear the member variable
+        m_edcaBackingOff = nullptr;
+    }
+
+    if (m_edca->GetTxopLimit(m_linkId).IsStrictlyPositive())
+    {
+        // TXOP limit is not null. We have to check if this EDCAF is starting a
+        // new TXOP. This includes the case when the transmission of a non-initial
+        // frame of a TXOP failed and backoff was invoked without terminating the
+        // TXOP. In such a case, we assume that a new TXOP is being started if it
+        // elapsed more than TXOPlimit since the start of the paused TXOP. Note
+        // that GetRemainingTxop returns 0 iff Now - TXOPstart >= TXOPlimit
+        if (!m_edca->IsTxopStarted(m_linkId) ||
+            (backingOff && m_edca->GetRemainingTxop(m_linkId).IsZero()))
+        {
+            // starting a new TXOP
+            m_edca->NotifyChannelAccessed(m_linkId, txopDuration);
+
+            if (StartFrameExchange(m_edca, txopDuration, true))
+            {
+                m_initialFrame = true;
+                return true;
+            }
+
+            // TXOP not even started, return false
+            NS_LOG_DEBUG("No frame transmitted");
+            NotifyChannelReleased(m_edca);
+            m_edca = nullptr;
+            return false;
+        }
+
+        // We are continuing a TXOP, check if we can transmit another frame
+        NS_ASSERT(!m_initialFrame);
+
+        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false))
+        {
+            NS_LOG_DEBUG("Not enough remaining TXOP time");
+            return SendCfEndIfNeeded();
+        }
+
+        return true;
+    }
+
+    // we get here if TXOP limit is null
+    m_initialFrame = true;
+
+    if (StartFrameExchange(m_edca, Time::Min(), true))
+    {
+        m_edca->NotifyChannelAccessed(m_linkId, Seconds(0));
+        return true;
+    }
+
+    NS_LOG_DEBUG("No frame transmitted");
+    NotifyChannelReleased(m_edca);
+    m_edca = nullptr;
+    return false;
+}
+```    
