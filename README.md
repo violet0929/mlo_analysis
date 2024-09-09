@@ -42,10 +42,12 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * module/json2csv.py 구현 완료: pcap <-> json <-> csv 변환 완료
 
 * 실험 환경: **topology** (1AP + 2STA), **distance** (10m), **Channel** (2.4GHz 20MHz + 5GHz 20MHz), **traffic flow** (uplink only), **data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)기반 link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석 (1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷을 리스트업 해보면...)
+  ```
   * 1.024796 STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
   * 1.062315 STA2 -> AP #538 패킷 재전송
   * 1.068316 AP STA2가 전송한 #538 패킷 수신
-
+  ```
+  
 * AP 입장
   * 1.024648s, STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신
   * 1.034995s, STA1에서 전송된 (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 수신
@@ -113,16 +115,15 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 정답: https://www.radiotap.org/fields/A-MPDU%20status.html
       
   * 3번 사건에서 STA2가 전송한 패킷이 손실된 이유가 뭘까?
-    * 예상: 1.205s 시점에서 매우 작은 시간 차이로 간섭이 발생
-    * 근거: AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생함.
-    * 근거: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에
+    * 예상: 1.025s 시점에서 매우 작은 시간 차이로 간섭이 발생
+    * 근거 1: AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생함.
+    * 근거 2: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에 발생할 수 있음
     * 정답: 교수님께 여쭤보기
 
-  * (중요!! 별표 3개) 특정 TXOP를 획득했을 때 송신한 A-MPDU에 포함된 wlan seq #와 수신한 BA의 wlan seq #는 다를 수 있다.
+  * (⭐중요!! ) 특정 TXOP를 획득했을 때 송신한 A-MPDU에 포함된 wlan seq #와 수신한 BA의 wlan seq #는 다를 수 있다.
     * EDCA 표준에 근거하여, VI TXOP Limit: 4.096ms임.
     * 따라서, 1.032994s 시점 (No. 5)에 획득한 VI TXOP는 ~ 1.03709s 시점까지 유효 (i.e., 1.037148s 시점에 획득한 VI TXOP는 새로운 TXOP임)
-    * 수신받은 
-    * 송신 A-mpdu(#87 ~ #115) 와 수신 A-mpdu(#58 ~ #86) wlan seq #가 다름
+    * 
 
-  * (중요!! 별표 5개) 39번 A-MPDU의 BA는 어디있지?
+  * (⭐중요!!) 39번 A-MPDU의 BA는 어디있지?
     * 매우 중요!!! 이건 마지막에
