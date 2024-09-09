@@ -115,7 +115,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 가독성을 위해 시간은 소수점 아래 3번째 자리까지 표현 (이하 반올림)
   * (⭐중요) 아래 그림은, `특정 device의 입장`이 아닌 `각 device의 입장`을 기준으로 나타낸 그림
   
- ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
+  ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
 
 * 논의사항
   * STA이 전송할 때 사용한 A-mpdu ID와 AP가 수신받은 A-mpdu ID가 다름
@@ -156,3 +156,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     3. 1.082250s AP STA2가 전송한 #234 ~ #272 A-mpdu 수신
     ```
     * 따라서, No. 11과 No. 13에 송신한 STA1 및 STA2의 A-mdpu 모두 손실
+
+  * 예쁘게 정리해보면
+    ![image](https://github.com/user-attachments/assets/95589418-12a4-460c-ad57-c5842ecccb1b)
