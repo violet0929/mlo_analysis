@@ -227,7 +227,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   }
   ```
 
-  > +1.09477s: No retry
+  > +1.09477s: No retry  
   > +1.11826s: retry
   
   * 시간 동기화가 안맞다. wifi-phy.cc에서 전송한 시간과 pcap에서 캡처된 시간이 다른 대신, 간격은 유사하다
