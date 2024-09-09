@@ -497,7 +497,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
   * 조건 3. 전송하지 않은 경우
     * return false
       
-  ### 6. ns3::HeFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 거의 9할 이라고 해도 무방)
+  ### 6. ns3::HeFrameExchangeManager::StartFrameExchange (중요도 하)
 ```
 bool
 HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
@@ -561,5 +561,69 @@ HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     }
 
     return false;
+}
+```
+  * 802.11ax에서 지원하는 Multi-User Transmission 관련 내용
+  * SU_TX 사용함. 관련 없음. 패스.
+
+  ### 7. ns3::HtFrameExchangeManager::StartFrameExchange (중요도 최상)
+```
+bool
+HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
+{
+    NS_LOG_FUNCTION(this << edca << availableTime << initialFrame);
+
+    // First, check if there is a BAR to be transmitted
+    if (auto mpdu = GetBar(edca->GetAccessCategory());
+        mpdu && SendMpduFromBaManager(mpdu, availableTime, initialFrame))
+    {
+        return true;
+    }
+
+    Ptr<WifiMpdu> peekedItem = edca->PeekNextMpdu(m_linkId);
+
+    // Even though channel access is requested when the queue is not empty, at
+    // the time channel access is granted the lifetime of the packet might be
+    // expired and the queue might be empty.
+    if (!peekedItem)
+    {
+        NS_LOG_DEBUG("No frames available for transmission");
+        return false;
+    }
+
+    const WifiMacHeader& hdr = peekedItem->GetHeader();
+    // setup a Block Ack agreement if needed
+    if (hdr.IsQosData() && !hdr.GetAddr1().IsGroup() &&
+        NeedSetupBlockAck(hdr.GetAddr1(), hdr.GetQosTid()))
+    {
+        // if the peeked MPDU has been already transmitted, use its sequence number
+        // as the starting sequence number for the BA agreement, otherwise use the
+        // next available sequence number
+        uint16_t startingSeq =
+            (hdr.IsRetry()
+                 ? hdr.GetSequenceNumber()
+                 : m_txMiddle->GetNextSeqNumberByTidAndAddress(hdr.GetQosTid(), hdr.GetAddr1()));
+        return SendAddBaRequest(hdr.GetAddr1(),
+                                hdr.GetQosTid(),
+                                startingSeq,
+                                edca->GetBlockAckInactivityTimeout(),
+                                true,
+                                availableTime);
+    }
+
+    // Use SendDataFrame if we can try aggregation
+    if (hdr.IsQosData() && !hdr.GetAddr1().IsGroup() && !peekedItem->IsFragment() &&
+        !GetWifiRemoteStationManager()->NeedFragmentation(peekedItem =
+                                                              CreateAliasIfNeeded(peekedItem)))
+    {
+        return SendDataFrame(peekedItem, availableTime, initialFrame);
+    }
+
+    // Use the QoS FEM to transmit the frame in all the other cases, i.e.:
+    // - the frame is not a QoS data frame
+    // - the frame is a broadcast QoS data frame
+    // - the frame is a fragment
+    // - the frame must be fragmented
+    return QosFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
 }
 ```
