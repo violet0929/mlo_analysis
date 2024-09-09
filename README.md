@@ -42,11 +42,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * module/json2csv.py 구현 완료: pcap <-> json <-> csv 변환 완료
 
 * 실험 환경
-  * **topology** (1AP + 2STA)
-  * **distance** (10m)
+  * **Topology** (1AP + 2STA)
+  * **Distance** (10m)
   * **Channel** (2.4GHz 20MHz + 5GHz 20MHz)
-  * **traffic flow** (uplink only)
-  * **data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
+  * **Traffic flow** (uplink only)
+  * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
 * link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석
   * (1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷 리스트업)
   ```
