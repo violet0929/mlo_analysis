@@ -238,7 +238,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 <p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
 
   * 하나씩 순서대로 뜯자.
-  * ns3::ChannelAccessManager::AccessTimeout channel-access-manager.cc:576
+  * ns3::ChannelAccessManager::AccessTimeout
 ```c
 void
 ChannelAccessManager::AccessTimeout()
@@ -251,7 +251,7 @@ ChannelAccessManager::AccessTimeout()
 ```
   * backoff update 말고 뭐 없다 패스
 
-  * (⭐ 매우매우 중요) ns3::ChannelAccessManager::DoGrantDcfAccess channel-access-manager.cc::551
+  * (⭐중요) ns3::ChannelAccessManager::DoGrantDcfAccess
 ```c
 void
 ChannelAccessManager::DoGrantDcfAccess()
@@ -332,4 +332,65 @@ ChannelAccessManager::DoGrantDcfAccess()
     }
 }
 ```
+  * 먼저, m_txops는 각 AC 별 TXOP를 뜻함. 즉, AC_VO txop, AC_VI txop, AC_BE txop, AC_BK txop 총 4개가 존재
+  * 전송 시작 전, EDCA internal contention 먼저 필터링
+  * 만약, 여러 AC에 해당하는 TXOP들이 동시에 backoff 만료 및 매체 접근이 필요할 때 상위 AC에 해당하는 TXOP 먼저 획득 (나머지는 내부 경쟁 패배)
+  * 반대로 말하면, 하위 AC에 해당하는 TXOP를 얻으려면 상위 AC에 해당하는 TXOP의 backoff가 진행 중이거나 매체 접근 요청 상태가 아니어야함
+  * 이때, 획득한 TXOP의 전송이 완료된 후 (성공하거나 실패하거나 어쨋든) internal contention txop 계산(backoff 재계산 등) 수행
+    * 구현 이슈인거 같음: 변경 사항을 획득한 txop의 전송 전에 적용하면 전역 변수 변경과 같은 문제 야기
+  * 내부 경쟁이 끝나면 EDCAF에서 txop에 대한 전송을 시작함.
 
+  * ns3::EhtFrameExchangeManager::StartTransmission
+```c
+bool
+EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
+{
+    NS_LOG_FUNCTION(this << edca << allowedWidth);
+
+    auto started = HeFrameExchangeManager::StartTransmission(edca, allowedWidth);
+
+    if (started && m_staMac && m_staMac->IsEmlsrLink(m_linkId))
+    {
+        // notify the EMLSR Manager of the UL TXOP start on an EMLSR link
+        NS_ASSERT(m_staMac->GetEmlsrManager());
+        m_staMac->GetEmlsrManager()->NotifyUlTxopStart(m_linkId);
+    }
+
+    return started;
+}
+```
+  * EMLSR (Enhanced Multi-link Single-Radio)
+  * 하나의 RF(i.e., Antenna)가 여러개의 대역을 지원하는 경우
+  * 예를 들어, 단일 RF에서 1s ~ 10s는 2.4GHz 대역에서 전송을 하고, 11s ~ 20s는 5GHz 대역에서 전송을 하는 것과 같음 (동시성 x)
+  * 관련 없음. 패스.
+
+  * (⭐중요) ns3::QosFrameExchangeManager::StartTransmission
+```c
+bool
+QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
+{
+    NS_LOG_FUNCTION(this << edca << allowedWidth);
+
+    if (m_pifsRecoveryEvent.IsRunning())
+    {
+        // Another AC (having AIFS=1 or lower, if the user changed the default settings)
+        // gained channel access while performing PIFS recovery. Abort PIFS recovery
+        CancelPifsRecovery();
+    }
+
+    // TODO This will become an assert once no Txop is installed on a QoS station
+    if (!edca->IsQosTxop())
+    {
+        m_edca = nullptr;
+        return FrameExchangeManager::StartTransmission(edca, allowedWidth);
+    }
+
+    m_allowedWidth = allowedWidth;
+    auto qosTxop = StaticCast<QosTxop>(edca);
+    /*if (qosTxop->GetAccessCategory() == AC_VO)
+    {
+        NS_LOG_UNCOND("AC_VO");
+    }*/
+    return StartTransmission(qosTxop, qosTxop->GetTxopLimit(m_linkId));
+}
+```
