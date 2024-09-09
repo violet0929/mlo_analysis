@@ -48,13 +48,13 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * **Traffic flow** (uplink only)
   * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
 * link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석
-  * (1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷 리스트업)
   ```
   1. 1.024796 STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
   2. 1.062315 STA2 -> AP #538 패킷 재전송
   3. 1.068316 AP STA2가 전송한 #538 패킷 수신
   ```
   
+* 1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷 리스트업
 * AP 입장
   * 1.024648s, STA1에서 전송된 (AC_VI, A-MPDU ID 34: #29 ~ #57) 패킷 수신
   * 1.034995s, STA1에서 전송된 (AC_VI, A-MPDU ID 35: #58 ~ #86) 패킷 수신
