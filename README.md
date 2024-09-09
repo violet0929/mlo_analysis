@@ -17,8 +17,12 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * 
 
 ## Package
+* Ubuntu: 22.04
+* ns-3: 3.40
 * python: 3.12
-
+* CMake: 3.29.6
+* GCC: 11.4.0
+  
 ## Running
 * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
   * Case 1.1: 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
