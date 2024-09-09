@@ -52,8 +52,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
   2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
   3. 1.066485s STA2 -> AP #566, #741 ~ #768 패킷 재전송
-  3. 1.068316s AP STA2가 전송한 #538 패킷 수신
-  4. 1.072622s AP STA2가 전송한 #566, #741 ~ #768 패킷 수신
+  3. 1.068316s AP에서 STA2가 재전송한 #538 패킷 수신
+  4. 1.072622s AP에서 STA2가 재전송한 #566, #741 ~ #768 패킷 수신
   ```
   
 * 1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷 리스트업
@@ -149,21 +149,25 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 따라서, 간섭으로 인해 AP가 STA1이 전송한 39번 A-mpdu에 대한 BA를 송신하지 못함
 
   * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었을까?
-    * (No. 11) 로그 추가 분석 
+    * No. 11 로그 추가 분석 
     ```
     1. 1.045457s STA1 -> AP (AC_VI, A-MPDU ID 39: #174 ~ #202) A-mpdu 송신
     2. 1.084516s STA1 -> AP #174 ~ #201 A-mpdu 재전송
-    3. 1.090517s AP STA1가 재전송한 #174 ~ #201 A-mpdu 수신
+    3. 1.090517s AP에서 STA1가 재전송한 #174 ~ #201 A-mpdu 수신
     ```
-    * Not identified issue: #202는 어디갔지...로그 봤는데 아무데도 없음... 예상컨데, 설정된 throughtput의 값이 너무 커서 큐에 이슈가 있는거 같음
-    
-    * (No. 13) 로그 추가 분석 
+    * Not identified issue: #202는 어디갔지...로그 봤는데 아무데도 없음... 예상컨데, 설정된 throughtput의 값이 너무 커서 MAC queue에 이슈가 있는거 같음
+    * No. 13 로그 추가 분석 
     ```
     1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
     2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
-    3. 1.082250s AP STA2가 전송한 #234 ~ #272 A-mpdu 수신
+    3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
     ```
     * 따라서, No. 11과 No. 13에 송신한 STA1 및 STA2의 A-mdpu 모두 손실
 
-  * 예쁘게 정리해보면
+  * (⭐중요) VI와 BE의 손실된 패킷을 복구하기 위한 재전송 방식이 다르다!?
+    * NS-3 call stack 다 까야함 (오늘 밤새서 논리적으로 정리 해야될거)
+        
+  * 결론적으로 예쁘게 정리
     ![image](https://github.com/user-attachments/assets/95589418-12a4-460c-ad57-c5842ecccb1b)
+
+
