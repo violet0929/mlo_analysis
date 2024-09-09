@@ -396,7 +396,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 언제 사용? PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
   * 관련 없음. 패스
 
-  ### 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 거의 9할 이라고 해도 무방)
+  ### 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 거의 4할)
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
@@ -566,7 +566,7 @@ HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
   * 802.11ax에서 지원하는 Multi-User Transmission 관련 내용
   * SU_TX 사용함. 관련 없음. 패스.
 
-  ### 7. ns3::HtFrameExchangeManager::StartFrameExchange (중요도 최상)
+  ### 7. ns3::HtFrameExchangeManager::StartFrameExchange (⭐ 중요도 최상 여기가 거의 4할)
 ```
 bool
 HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
@@ -627,3 +627,14 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     return QosFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
 }
 ```
+  * 먼저, 전송할 BA Req 프레임이 있는지 확인 (즉, 특정 AC에 해당하는 MAC queue에 BA req 프레임이 있는 경우)
+    * Note: BA req 프레임 생성은 MPDU expired event가 호출되어야 하고 이는 현재 수행중인 채널 접근 및 데이터 전송과는 독립적으로 발생하는 이벤트임 (따로 루틴 분석을 위한 debug를 해야함) 
+  * 또한, 큐에 MPDU가 있어 채널 접근 요청을 수행했다 하더라도 채널 접근을 위해 대기하는 시간 동안 MPDU의 시간이 만료되었을 수 있으므로 한번 더 체크
+  * 결론적으로 크게 3가지의 조건문 존재
+  * 조건 1. BlockAckAgreement
+  * 조건 2. 일반적인 상황에서의 전송
+  * 조건 3. 특정 상황에서의 전송
+    * 특정 상황 1. 프레임이 QoS Frame이 아닌 경우
+    * 특정 상황 2. Broadcast QoS Frame인 경우
+    * 특정 상황 3. Fragment된 Frame인 경우
+    * 특정 상황 4. Frame이 Fragmentation을 수행해서 전송해야 하는 경
