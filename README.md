@@ -637,4 +637,6 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     * 특정 상황 1. 프레임이 QoS Frame이 아닌 경우
     * 특정 상황 2. Broadcast QoS Frame인 경우
     * 특정 상황 3. Fragment된 Frame인 경우
-    * 특정 상황 4. Frame이 Fragmentation을 수행해서 전송해야 하는 경
+    * 특정 상황 4. Frame이 Fragmentation을 수행해서 전송해야 하는 경우
+   
+## 졸리다 내일하자...
