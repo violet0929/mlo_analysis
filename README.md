@@ -238,7 +238,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 <p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
 
   * 하나씩 순서대로 뜯자.
-  * (중요도 하) 1. ns3::ChannelAccessManager::AccessTimeout
+  * 1. ns3::ChannelAccessManager::AccessTimeout (중요도 하)
 ```c
 void
 ChannelAccessManager::AccessTimeout()
@@ -251,7 +251,7 @@ ChannelAccessManager::AccessTimeout()
 ```
   * backoff update 말고 뭐 없다 패스
 
-  * (⭐ 중요도 상) 2. ns3::ChannelAccessManager::DoGrantDcfAccess
+  * 2. ns3::ChannelAccessManager::DoGrantDcfAccess (⭐ 중요도 상) 
 ```c
 void
 ChannelAccessManager::DoGrantDcfAccess()
@@ -336,11 +336,12 @@ ChannelAccessManager::DoGrantDcfAccess()
   * 전송 시작 전, EDCA internal contention 먼저 필터링
   * 만약, 여러 AC에 해당하는 TXOP들이 동시에 backoff 만료 및 매체 접근이 필요할 때 상위 AC에 해당하는 TXOP 먼저 획득 (나머지는 내부 경쟁 패배)
   * 반대로 말하면, 하위 AC에 해당하는 TXOP를 얻으려면 상위 AC에 해당하는 TXOP의 backoff가 진행 중이거나 매체 접근 요청 상태가 아니어야함
-  * 이때, 획득한 TXOP의 전송이 완료된 후 (성공하거나 실패하거나 어쨋든) internal contention txop 계산(backoff 재계산 등) 수행
-    * 구현 이슈인거 같음: 변경 사항을 획득한 txop의 전송 전에 적용하면 전역 변수 변경과 같은 문제 야기
-  * 내부 경쟁이 끝나면 EDCAF에서 txop에 대한 전송을 시작함.
+  * 결론적으로, 내부 경쟁에서 승리한 EDCAF (즉, 특정 AC에 해당하는 txop)에 대한 전송을 시작함.
+  * Note: 내부 경쟁에서 승리한 TXOP의 전송이 완료된 후 (성공하거나 실패하거나 어쨋든) 나머지 internal contention이 발생 TXOP에 대해 계산 (backoff 재계산 등) 수행
+    * 구현 이슈인거 같음: 변경 사항을 획득한 txop의 전송 전에 적용하면 전역 변수 값 변경과 같은 문제 야기
+  
 
-  * (중요도 하) 3. ns3::EhtFrameExchangeManager::StartTransmission
+  * 3. ns3::EhtFrameExchangeManager::StartTransmission (중요도 하)
 ```c
 bool
 EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
@@ -364,7 +365,7 @@ EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 예를 들어, 단일 RF에서 1s ~ 10s는 2.4GHz 대역에서 전송을 하고, 11s ~ 20s는 5GHz 대역에서 전송을 하는 것과 같음 (동시성 x)
   * 관련 없음. 패스.
 
-  * (중요도 하) 4. ns3::QosFrameExchangeManager::StartTransmission
+  * 4. ns3::QosFrameExchangeManager::StartTransmission (중요도 하)
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
@@ -395,7 +396,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 언제 사용? PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
   * 관련 없음. 패스
 
-  * (⭐ 중요도 최상 여기가 거의 9할 이라고 해도 무방) 5. ns3::QosFrameExchangeManager::StartTransmission
+  * 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 거의 9할 이라고 해도 무방)
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
