@@ -87,7 +87,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * Partially Tx/Rx -> 단일 A-MPDU에 재전송과 일반 전송에 해당하는 MPDU가 공존하는 경우
   * Totally Tx/Rx -> 단일 A-MPDU에 포함된 모든 MPDU들이 재전송에 해당하는 경우
 
-| No  | Time      | Description                  | AC  | A-MPDU ID | Wlan Seq #        | Retry        |
+| No  | Time      | Description                  | AC  | A-mpdu ID | Wlan Seq #        | Retry        |
 | :-: | :-------: | :--------------------------: | :-: | :-------: | :---------------: | :----------: |
 | 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI  | 34        | #29 ~ #57         | -            |
 | 2   | 1.024648s | AP <- `STA1` receive A-MPDU  | VI  | 34        | #29 ~ #57         | -            |
@@ -110,33 +110,34 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 | 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
 
 * 그림으로 표현
-  * 파란색 및 초록색 block에 표기되어 있는 번호는 A-MPDU ID를 나타냄
+  * 파란색 및 초록색 block에 표기되어 있는 번호는 A-mpdu ID를 나타냄
   * 1 칸당 약 1ms를 의미함
   * 가독성을 위해 시간은 소수점 아래 3번째 자리까지 표현 (이하 반올림)
+  * (⭐중요) 아래 그림은, `특정 device의 입장`이 아닌 `각 device의 입장`을 기준으로 나타낸 그림
   
  ![image](https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8)
 
 * 논의사항
-  * STA이 전송할 때 사용한 A-MPDU ID와 AP가 수신받은 A-MPDU ID가 다름
-    * e.g., 1.057s 시점 (No. 14)에서 STA2가 전송한 A-MPDU ID: 41, 1.064s 시점 (No. 16)에서 AP가 수신한 A-MPDU ID: 39
-    * 예상: A-MPDU ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용
-    * 근거: 각 device 입장에서 보면 A-MPDU의 AC가 다르더라도 ID는 sequential하게 증가함
+  * STA이 전송할 때 사용한 A-mpdu ID와 AP가 수신받은 A-mpdu ID가 다름
+    * e.g., 1.057s 시점 (No. 14)에서 STA2가 전송한 A-mpdu ID: 41, 1.064s 시점 (No. 16)에서 AP가 수신한 A-mpdu ID: 39
+    * 예상: A-mpdu ID는 특정 device에서 aggregation 된 패킷을 구분하기 위해 사용
+    * 근거: 각 device 입장에서 보면 A-mpdu의 AC가 다르더라도 ID는 sequential하게 증가함
     * 정답: https://www.radiotap.org/fields/A-MPDU%20status.html
       
   * 1.024796s 시점(No. 3)에서 STA2가 전송한 패킷이 손실된 이유
     * 예상: 1.025s 시점에서 매우 작은 시간 차이로 간섭이 발생 (i.e., 1.024796s - 1.024648s = 0.148ms)
     * 근거 1: AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생
-    * 근거 2: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에 발생할 수 있음
+    * 근거 2: STA 별로 backoff procedure는 독립적으로 동작하기 때문에 발생할 수 있음
     * 정답: 교수님께 여쭤보기
 
-  * (⭐중요) 특정 TXOP를 획득했을 때 송신한 A-MPDU에 포함된 wlan seq #와 수신한 BA의 wlan seq #는 다를 수 있음
+  * (⭐중요) 특정 TXOP를 획득했을 때 송신한 A-mpdu에 포함된 wlan seq #와 수신한 A-mpdu에 대한 BA의 wlan seq #는 다를 수 있음
     * EDCA 표준에 근거하여, VI TXOP Limit: 4.096ms
     * 따라서, 1.032994s 시점 (No. 5)에 획득한 VI TXOP는 ~ 1.03709s 시점까지 유효 (i.e., 1.037148s 시점에 획득한 VI TXOP는 새로운 TXOP임)
     * 즉, 1.032994s 시점 (No. 5)에 획득한 VI TXOP는 1.034995s 시점 (No.6)의 로그까지 유효
     * No. 5 - 송신 A-mpdu wlan seq #: 87 ~ 115
     * No. 6 - 수신 A-mpdu wlan seq #: 58 ~ 86
 
-  * (⭐중요) 1.045457s 시점 (No. 11)에서 전송한 39번 A-MPDU의 BA는 어디있지?
+  * (⭐중요) 1.045457s 시점 (No. 11)에서 전송한 39번 A-mpdu의 BA는 어디있지?
     * 증명을 위해서는, No. 11 사건과 동일한 No. 5, 7, 9 사건의 latency 측정이 필요
     * 여기서 `동일한 사건`의 의미: 동일한 channel, STA, AC, Aggregation size
     * No. 5: 1.039131s - 1.032994s = 6.137ms
@@ -147,7 +148,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * **STA1에서 전송된 패킷에 대한 AP의 추정 수신 시간**과 **STA2가 패킷을 전송한 시간** 간격: 1.051594s - 1.051254s = 0.34ms
     * 따라서, 간섭으로 인해 AP가 STA1이 전송한 39번 A-mpdu에 대한 BA를 송신하지 못함
 
-  * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었는가
+  * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었을까?
     * 로그 추가 분석
     ```
     1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
