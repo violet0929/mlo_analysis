@@ -149,7 +149,15 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 따라서, 간섭으로 인해 AP가 STA1이 전송한 39번 A-mpdu에 대한 BA를 송신하지 못함
 
   * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었을까?
-    * 로그 추가 분석
+    * (No. 11) 로그 추가 분석 
+    ```
+    1. 1.045457s STA1 -> AP (AC_VI, A-MPDU ID 39: #174 ~ #202) A-mpdu 송신
+    2. 1.084516s STA1 -> AP #174 ~ #201 A-mpdu 재전송
+    3. 1.090517s AP STA1가 재전송한 #174 ~ #201 A-mpdu 수신
+    ```
+    * Not identified issue: #202는 어디갔지...로그 봤는데 아무데도 없음... 예상컨데, 설정된 throughtput의 값이 너무 커서 큐에 이슈가 있는거 같음
+    
+    * (No. 13) 로그 추가 분석 
     ```
     1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
     2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
