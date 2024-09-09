@@ -216,10 +216,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   
   ```c
   auto ptr = ppdu->GetPsdu()->begin();
-  for(int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
+  for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
     auto mpdu_header = ptr[i]->GetHeader();
     if (mpdu_header.GetSequenceNumber() == 234 && mpdu_header.GetQosTid() == 3){
-      if(mpdu_header.IsRetry() == 1)
+      if (mpdu_header.IsRetry() == 1)
         NS_LOG_UNCOND(Simulator::Now().As(Time::S) << ": retry");
       else
         NS_LOG_UNCOND(Simulator::Now().As(Time::S) << ": No retry");
@@ -234,3 +234,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * ns-3 wifi-phy.cc: 1.11826s - 1.09477s = 23.49ms
     * wireshark: 1.074739s - 1.051254s = 23.485ms
   
+  * 이제 함수 call stack을 보면
+  ![image](https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208)
+
