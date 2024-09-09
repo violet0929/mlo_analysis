@@ -199,9 +199,35 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     NS_LOG_UNCOND(ptr[i]->GetHeader());
   }
   ```
-  * 여기서 mpdu header의 retry 및 wlan seq#는
+  * 여기서 mpdu header의 retry, wlan seq#, AC 확인은 
   ```
-  ptr[i]->GetHeader().IsRetry();
-  ptr[i]->GetHeader().GetSequenceNumber();
+  ptr[i]->GetHeader().IsRetry(); // 1: retry, 0: no retry
+  ptr[i]->GetHeader().GetSequenceNumber(); // wlan seq #
+  ptr[i]->GetHeader().GetQosTid(); // 3: AC_BE, 5: AC_VI
   ```
-  * 따라서, 
+  * 따라서, No. 13 로그 분석을 위해 아래와 같은 코드를 작성하고 실행하면
+  ```
+    1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
+    2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
+    3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
+  ```
+  ```
+  auto ptr = ppdu->GetPsdu()->begin();
+  for(int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
+    auto mpdu_header = ptr[i]->GetHeader();
+    if (mpdu_header.GetSequenceNumber() == 234 && mpdu_header.GetQosTid() == 3){
+      if(mpdu_header.IsRetry() == 1)
+        NS_LOG_UNCOND(Simulator::Now().As(Time::S) << ": retry");
+      else
+        NS_LOG_UNCOND(Simulator::Now().As(Time::S) << ": No retry");
+    }
+  }
+  ```
+  ```
+  +1.09477s: No retry
+  +1.11826s: retry
+  ```
+  * 시간 동기화가 안맞다. wifi-phy.cc에서 전송한 시간과 pcap에서 캡처된 시간이 다른 대신, 간격은 유사하다
+    * ns-3 wifi-phy.cc: 1.11826s - 1.09477s = 23.49ms
+    * wireshark: 1.074739s - 1.051254s = 23.485ms
+  
