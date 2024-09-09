@@ -51,8 +51,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
   2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
   3. 1.066485s STA2 -> AP #566, #741 ~ #768 패킷 재전송
-  3. 1.068316s AP에서 STA2가 재전송한 #538 패킷 수신
-  4. 1.072622s AP에서 STA2가 재전송한 #566, #741 ~ #768 패킷 수신
+  4. 1.068316s AP에서 STA2가 재전송한 #538 패킷 수신
+  5. 1.072622s AP에서 STA2가 재전송한 #566, #741 ~ #768 패킷 수신
   ```
   
 * 1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷 리스트업
@@ -164,12 +164,27 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 따라서, No. 11과 No. 13에 송신한 STA1 및 STA2의 A-mdpu 모두 손실
 
   * (⭐중요) VI와 BE의 손실된 패킷을 복구하기 위한 재전송 방식이 다르다!?
-    * 자세한 코드 분석은 [Appendix A.](#appendix-a.)을 참조
-    * NS-3 call stack 다 까야함 (오늘 밤새서 논리적으로 정리 해야될거)
+    * 전송하는 A-mpdu의 AC가 VI인 경우, 원본 A-mpdu가 분할되어 재전송
+    * 반면, A-mpdu의 AC가 BE인 경우, 원본 A-mpdu와 동일한 A-mpdu가 재전송
+    * AC에 따른 TXOP Limit 값과 연관성이 있음
+    * 자세한 분석은 [Appendix A](#appendix-a)을 참조
+    ```
+    1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
+    2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
+    3. 1.066485s STA2 -> AP #566, #741 ~ #768 패킷 재전송
+    4. 1.068316s AP에서 STA2가 재전송한 #538 패킷 수신
+    5. 1.072622s AP에서 STA2가 재전송한 #566, #741 ~ #768 패킷 수신
+    ```
+
+    ```
+    1. 1.045457s STA1 -> AP (AC_VI, A-MPDU ID 39: #174 ~ #202) A-mpdu 송신
+    2. 1.084516s STA1 -> AP #174 ~ #201 A-mpdu 재전송
+    3. 1.090517s AP에서 STA1가 재전송한 #174 ~ #201 A-mpdu 수신
+    ```
         
   * 결론적으로 예쁘게 정리
     ![image](https://github.com/user-attachments/assets/95589418-12a4-460c-ad57-c5842ecccb1b)
 
-## Appendix A.
+## Appendix A
   * ns3 MAC retransmission
   
