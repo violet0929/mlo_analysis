@@ -188,4 +188,20 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 ## Appendix A
   * WifiNetDevice architecture. For 802.11be Multi-Link Devices (MLDs), there as many instances of WifiPhy, FrameExchangeManager and ChannelAccessManager as the number of links.
   * Reference: https://www.nsnam.org/docs/release/3.40/models/singlehtml/index.html#document-wifi)
+    
   ![image](https://www.nsnam.org/docs/release/3.40/models/singlehtml/_images/WifiArchitecture.png)
+
+  * 전체 flow를 보기위해 최하위 계층 wifi-phy.cc의 Send()에서 breakpoint를 걸어야함
+  * 아래 코드를 통해 wifi.phy.cc에서 ppdu->psdu->mpdu_list->mpdu 접근 가능
+  ```
+  auto ptr = ppdu->GetPsdu()->begin();
+  for(int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
+    NS_LOG_UNCOND(ptr[i]->GetHeader());
+  }
+  ```
+  * 여기서 mpdu header의 retry 및 wlan seq#는
+  ```
+  ptr[i]->GetHeader().IsRetry();
+  ptr[i]->GetHeader().GetSequenceNumber();
+  ```
+  * 따라서, 
