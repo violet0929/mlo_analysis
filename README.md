@@ -164,9 +164,12 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 따라서, No. 11과 No. 13에 송신한 STA1 및 STA2의 A-mdpu 모두 손실
 
   * (⭐중요) VI와 BE의 손실된 패킷을 복구하기 위한 재전송 방식이 다르다!?
+    * [Appendix](#appendix)
     * NS-3 call stack 다 까야함 (오늘 밤새서 논리적으로 정리 해야될거)
         
   * 결론적으로 예쁘게 정리
     ![image](https://github.com/user-attachments/assets/95589418-12a4-460c-ad57-c5842ecccb1b)
 
-
+## Appendix
+  ### A. ns-3 mac retransmission
+  
