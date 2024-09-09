@@ -49,9 +49,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
 * link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석
   ```
-  1. 1.024796 STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
-  2. 1.062315 STA2 -> AP #538 패킷 재전송
-  3. 1.068316 AP STA2가 전송한 #538 패킷 수신
+  1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
+  2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
+  3. 1.066485s STA2 -> AP #566, #741 ~ #768 패킷 재전송
+  3. 1.068316s AP STA2가 전송한 #538 패킷 수신
+  4. 1.072622s AP STA2가 전송한 #566, #741 ~ #768 패킷 수신
   ```
   
 * 1.024796 ~ 1.068316 시간 근처에 발생한 모든 송수신 패킷 리스트업
@@ -134,6 +136,21 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * No. 5 - 송신 A-mpdu wlan seq #: 87 ~ 115
     * No. 6 - 수신 A-mpdu wlan seq #: 58 ~ 86
 
-  * (⭐중요) 1.045457s 시점 (No.11)에서 전송한 39번 A-MPDU의 BA는 어디있지?
+  * (⭐중요) 1.045457s 시점 (No. 11)에서 전송한 39번 A-MPDU의 BA는 어디있지?
+    * 증명을 위해서는, (No. 11) 사건과 동일한 (No. 5, 7, 9) 사건의 latency 측정이 필요
+    * No. 5: 1.039131s - 1.032994s = 6.137ms
+    * No. 7: 1.043285s - 1.037148s = 6.137ms
+    * No. 9: 1.047431s - 1.041293s = 6.138ms
+    * 위 latency에 기반하여, No. 11에서 전송한 패킷에 대해 AP의 추정 수신 시간: 1.045457s + 0.006137s = 1.051594s
+    * 1.051254s 시점 (No. 13)에 STA2의 backoff procedure가 종료되고, AP로 42번 A-mpdu 전송
+    * **STA1에서 전송된 패킷에 대한 AP의 추정 수신 시간**과 **STA2가 패킷을 전송한 시간** 간격: 1.051254s - 1.051594s = 0.34ms
+    * 따라서, 간섭으로 인해 AP가 STA1이 전송한 39번 A-mpdu에 대한 BA를 송신하지 못함
+
+  * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었는가
     * 로그 추가 분석
-    * 
+    ```
+    1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
+    2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
+    3. 1.082250s AP STA2가 전송한 #234 ~ #272 A-mpdu 수신
+    ```
+    * 따라서, No. 11과 No. 13에 송신한 STA1 및 STA2의 A-mdpu 모두 손실
