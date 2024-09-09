@@ -199,16 +199,16 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     NS_LOG_UNCOND(ptr[i]->GetHeader());
   }
   ```
+
   * 여기서 mpdu header의 retry, wlan seq#, AC 확인은 
   ```c
   ptr[i]->GetHeader().IsRetry(); // 1: retry, 0: no retry
   ptr[i]->GetHeader().GetSequenceNumber(); // wlan seq #
   ptr[i]->GetHeader().GetQosTid(); // 3: AC_BE, 5: AC_VI
   ```
+
   * 따라서, No. 13 로그 분석을 위해 아래와 같은 코드를 작성하고 실행하면
-  
   ```
-  <b>No. 13 로그</b>
   1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
   2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
   3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
@@ -226,6 +226,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     }
   }
   ```
+
   > +1.09477s: No retry
   > +1.11826s: retry
   
