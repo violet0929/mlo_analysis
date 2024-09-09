@@ -144,7 +144,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * No. 9: 1.047431s - 1.041293s = 6.138ms
     * 위 latency에 기반하여, No. 11에서 전송한 패킷에 대해 AP의 추정 수신 시간: 1.045457s + 0.006137s = 1.051594s
     * 한편, 1.051254s 시점 (No. 13)에 STA2의 backoff procedure가 종료되고, AP로 42번 A-mpdu 전송
-    * **STA1에서 전송된 패킷에 대한 AP의 추정 수신 시간**과 **STA2가 패킷을 전송한 시간** 간격: 1.051254s - 1.051594s = 0.34ms
+    * **STA1에서 전송된 패킷에 대한 AP의 추정 수신 시간**과 **STA2가 패킷을 전송한 시간** 간격: 1.051594s - 1.051254s = 0.34ms
     * 따라서, 간섭으로 인해 AP가 STA1이 전송한 39번 A-mpdu에 대한 BA를 송신하지 못함
 
   * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었는가
