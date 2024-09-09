@@ -208,7 +208,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 따라서, No. 13 로그 분석을 위해 아래와 같은 코드를 작성하고 실행하면
   
   ```
-  **No. 13 로그**
+  ``No. 13 로그``
   1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
   2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
   3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
