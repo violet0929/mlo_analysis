@@ -364,7 +364,7 @@ EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 예를 들어, 단일 RF에서 1s ~ 10s는 2.4GHz 대역에서 전송을 하고, 11s ~ 20s는 5GHz 대역에서 전송을 하는 것과 같음 (동시성 x)
   * 관련 없음. 패스.
 
-  * 4. ns3::QosFrameExchangeManager::StartTransmission
+  * (중요도 하) 4. ns3::QosFrameExchangeManager::StartTransmission
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
