@@ -238,7 +238,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 <p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
 
   * 하나씩 순서대로 뜯자.
-#### 1. ns3::ChannelAccessManager::AccessTimeout (중요도 하)
+  #### 1. ns3::ChannelAccessManager::AccessTimeout (중요도 하)
 ```c
 void
 ChannelAccessManager::AccessTimeout()
