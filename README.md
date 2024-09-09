@@ -486,3 +486,80 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
     return false;
 }
 ```    
+  * 조건 1. 획득한 TXOP의 TXOP limit의 값이 0이상인 경우 (VO 및 VI에 해당)
+    * 조건 1.1 남은 TXOP limit 0인 경우 (즉, 획득한 TXOP에 대해 첫 번째 프레임을 전송하는 경우)
+      * StartFrameExchange(TXOP, 할당된 시간)
+    * 조건 1.2 남은 TXOP limit 값이 0이 아닌 경우 (즉, 획득한 TXOP에 대해 첫 번째 프레임을 전송하는 것이 아닌 경우)
+      * StartFrameExchange(TXOP, 남은 시간)
+      * 만약 전송 실패한 경우, 남은 TXOP의 시간이 프레임을 전송하기에 충분하지 않은 시간이므로, CF-End 프레임 전송)
+  * 조건 2. 획득한 TXOP의 TXOP limit의 값이 null인 경우 (BE 및 BK에 해당)
+    * StartFrameExchange(TXOP, 0)
+  * 조건 3. 전송하지 않은 경우
+    * return false
+      
+  ### 6. ns3::HeFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 거의 9할 이라고 해도 무방)
+```
+bool
+HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
+{
+    NS_LOG_FUNCTION(this << edca << availableTime << initialFrame);
+
+    MultiUserScheduler::TxFormat txFormat = MultiUserScheduler::SU_TX;
+    Ptr<const WifiMpdu> mpdu;
+
+    /*
+     * We consult the Multi-user Scheduler (if available) to know the type of transmission to make
+     * if:
+     * - there is no pending BlockAckReq to transmit
+     * - either the AC queue is empty (the scheduler might select an UL MU transmission)
+     *   or the next frame in the AC queue is a non-broadcast QoS data frame addressed to
+     *   a receiver with which a BA agreement has been already established
+     */
+    if (m_muScheduler && !GetBar(edca->GetAccessCategory()) &&
+        (!(mpdu = edca->PeekNextMpdu(m_linkId)) ||
+         (mpdu->GetHeader().IsQosData() && !mpdu->GetHeader().GetAddr1().IsGroup() &&
+          m_mac->GetBaAgreementEstablishedAsOriginator(mpdu->GetHeader().GetAddr1(),
+                                                       mpdu->GetHeader().GetQosTid()))))
+    {
+        txFormat = m_muScheduler->NotifyAccessGranted(edca,
+                                                      availableTime,
+                                                      initialFrame,
+                                                      m_allowedWidth,
+                                                      m_linkId);
+    }
+
+    if (txFormat == MultiUserScheduler::SU_TX)
+    {
+        return VhtFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
+    }
+
+    if (txFormat == MultiUserScheduler::DL_MU_TX)
+    {
+        if (m_muScheduler->GetDlMuInfo(m_linkId).psduMap.empty())
+        {
+            NS_LOG_DEBUG(
+                "The Multi-user Scheduler returned DL_MU_TX with empty psduMap, do not transmit");
+            return false;
+        }
+
+        SendPsduMapWithProtection(m_muScheduler->GetDlMuInfo(m_linkId).psduMap,
+                                  m_muScheduler->GetDlMuInfo(m_linkId).txParams);
+        return true;
+    }
+
+    if (txFormat == MultiUserScheduler::UL_MU_TX)
+    {
+        auto packet = Create<Packet>();
+        packet->AddHeader(m_muScheduler->GetUlMuInfo(m_linkId).trigger);
+        auto trigger = Create<WifiMpdu>(packet, m_muScheduler->GetUlMuInfo(m_linkId).macHdr);
+        SendPsduMapWithProtection(
+            WifiPsduMap{
+                {SU_STA_ID,
+                 GetWifiPsdu(trigger, m_muScheduler->GetUlMuInfo(m_linkId).txParams.m_txVector)}},
+            m_muScheduler->GetUlMuInfo(m_linkId).txParams);
+        return true;
+    }
+
+    return false;
+}
+```
