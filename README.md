@@ -235,5 +235,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * wireshark: 1.074739s - 1.051254s = 23.485ms
   
   * 이제 함수 call stack을 보면
+
   ![image](https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208)
+  ![image](https://github.com/user-attachments/assets/9497c7d3-3790-4813-b8d5-d990302021a7)
+
 
