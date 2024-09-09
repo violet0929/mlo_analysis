@@ -137,7 +137,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * No. 6 - 수신 A-mpdu wlan seq #: 58 ~ 86
 
   * (⭐중요) 1.045457s 시점 (No. 11)에서 전송한 39번 A-MPDU의 BA는 어디있지?
-    * 증명을 위해서는, (No. 11) 사건과 동일한 (No. 5, 7, 9) 사건의 latency 측정이 필요
+    * 증명을 위해서는, No. 11 사건과 동일한 No. 5, 7, 9 사건의 latency 측정이 필요
+    * 여기서 `동일한 사건`의 의미: 동일한 channel, STA, AC, Aggregation size
     * No. 5: 1.039131s - 1.032994s = 6.137ms
     * No. 7: 1.043285s - 1.037148s = 6.137ms
     * No. 9: 1.047431s - 1.041293s = 6.138ms
