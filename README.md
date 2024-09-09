@@ -234,8 +234,102 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * ns-3 wifi-phy.cc: 1.11826s - 1.09477s = 23.49ms
     * wireshark: 1.074739s - 1.051254s = 23.485ms
   
-  * 이제 함수 call stack을 보면
+  * 이제 wifi-phy.cc에 bp 걸고 함수 call stack을 보면
 <p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
-  
 
+  * 하나씩 순서대로 뜯자.
+  * ns3::ChannelAccessManager::AccessTimeout channel-access-manager.cc:576
+```c
+void
+ChannelAccessManager::AccessTimeout()
+{
+  NS_LOG_FUNCTION(this);
+  UpdateBackoff();
+  DoGrantDcfAccess();
+  DoRestartAccessTimeoutIfNeeded();
+}
+```
+  * backoff update 말고 뭐 없다 패스
+
+  * (⭐ 매우매우 중요) ns3::ChannelAccessManager::DoGrantDcfAccess channel-access-manager.cc::551
+```c
+void
+ChannelAccessManager::DoGrantDcfAccess()
+{
+    NS_LOG_FUNCTION(this);
+    uint32_t k = 0;
+    Time now = Simulator::Now();
+    for (auto i = m_txops.begin(); i != m_txops.end(); k++)
+    {
+        Ptr<Txop> txop = *i;
+        if (txop->GetAccessStatus(m_linkId) == Txop::REQUESTED &&
+            (!txop->IsQosTxop() || !StaticCast<QosTxop>(txop)->EdcaDisabled(m_linkId)) &&
+            GetBackoffEndFor(txop) <= now)
+        {
+            /**
+             * This is the first Txop we find with an expired backoff and which
+             * needs access to the medium. i.e., it has data to send.
+             */
+            NS_LOG_DEBUG("dcf " << k << " needs access. backoff expired. access granted. slots="
+                                << txop->GetBackoffSlots(m_linkId));
+            i++; // go to the next item in the list.
+            k++;
+            std::vector<Ptr<Txop>> internalCollisionTxops;
+            for (auto j = i; j != m_txops.end(); j++, k++)
+            {
+                Ptr<Txop> otherTxop = *j;
+                if (otherTxop->GetAccessStatus(m_linkId) == Txop::REQUESTED &&
+                    GetBackoffEndFor(otherTxop) <= now)
+                {
+                    NS_LOG_DEBUG(
+                        "dcf " << k << " needs access. backoff expired. internal collision. slots="
+                               << otherTxop->GetBackoffSlots(m_linkId));
+                    /**
+                     * all other Txops with a lower priority whose backoff
+                     * has expired and which needed access to the medium
+                     * must be notified that we did get an internal collision.
+                     */
+                    internalCollisionTxops.push_back(otherTxop);
+                }
+            }
+
+            /**
+             * Now, we notify all of these changes in one go if the EDCAF winning
+             * the contention actually transmitted a frame. It is necessary to
+             * perform first the calculations of which Txops are colliding and then
+             * only apply the changes because applying the changes through notification
+             * could change the global state of the manager, and, thus, could change
+             * the result of the calculations.
+             */
+            NS_ASSERT(m_feManager);
+            // If we are operating on an OFDM channel wider than 20 MHz, find the largest
+            // idle primary channel and pass its width to the FrameExchangeManager, so that
+            // the latter can transmit PPDUs of the appropriate width (see Section 10.23.2.5
+            // of IEEE 802.11-2020).
+            auto interval = (m_phy->GetPhyBand() == WIFI_PHY_BAND_2_4GHZ)
+                                ? GetSifs() + 2 * GetSlot()
+                                : m_phy->GetPifs();
+            auto width = (m_phy->GetOperatingChannel().IsOfdm() && m_phy->GetChannelWidth() > 20)
+                             ? GetLargestIdlePrimaryChannel(interval, now)
+                             : m_phy->GetChannelWidth();
+            if (m_feManager->StartTransmission(txop, width))
+            {
+                for (auto& collidingTxop : internalCollisionTxops)
+                {
+                    m_feManager->NotifyInternalCollision(collidingTxop);
+                }
+                break;
+            }
+            else
+            {
+                // reset the current state to the EDCAF that won the contention
+                // but did not transmit anything
+                i--;
+                k = std::distance(m_txops.begin(), i);
+            }
+        }
+        i++;
+    }
+}
+```
 
