@@ -122,7 +122,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 정답: https://www.radiotap.org/fields/A-MPDU%20status.html
       
   * 1.024796s 시점(No. 3)에서 STA2가 전송한 패킷이 손실된 이유
-    * 예상: 1.025s 시점에서 매우 작은 시간 차이로 간섭이 발생
+    * 예상: 1.025s 시점에서 매우 작은 시간 차이로 간섭이 발생 (i.e., 1.024796s - 1.024648s = 0.148ms)
     * 근거 1: AP가 STA1이 전송한 패킷에 대해 BA를 처리하는 시점에서 STA의 BO가 0에 도달하고, 전송하는 부분에서 간섭이 발생
     * 근거 2: STA 별로 Backoff procedure는 독립적으로 동작하기 때문에 발생할 수 있음
     * 정답: 교수님께 여쭤보기
@@ -130,9 +130,9 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * (⭐중요) 특정 TXOP를 획득했을 때 송신한 A-MPDU에 포함된 wlan seq #와 수신한 BA의 wlan seq #는 다를 수 있음
     * EDCA 표준에 근거하여, VI TXOP Limit: 4.096ms
     * 따라서, 1.032994s 시점 (No. 5)에 획득한 VI TXOP는 ~ 1.03709s 시점까지 유효 (i.e., 1.037148s 시점에 획득한 VI TXOP는 새로운 TXOP임)
-    * 즉, 1.032994s 시점 (No. 5)에 획득한 특정 AC에 기반한 단일 TXOP는 1.034995s 시점(No.6)까지 유효
-    * 송신 A-mpdu wlan seq #: 87 ~ 115
-    * 수신 A-mpdu wlan seq #: 58 ~ 86
+    * 즉, 1.032994s 시점 (No. 5)에 획득한 VI TXOP는 1.034995s 시점 (No.6)의 로그까지 유효
+    * No. 5 - 송신 A-mpdu wlan seq #: 87 ~ 115
+    * No. 6 - 수신 A-mpdu wlan seq #: 58 ~ 86
 
   * (⭐중요) 1.045457s 시점 (No.11)에서 전송한 39번 A-MPDU의 BA는 어디있지?
     * 로그 추가 분석
