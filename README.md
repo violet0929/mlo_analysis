@@ -167,7 +167,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 전송하는 A-mpdu의 AC가 VI인 경우, 원본 A-mpdu가 분할되어 재전송
     * 반면, A-mpdu의 AC가 BE인 경우, 원본 A-mpdu와 동일한 A-mpdu가 재전송
     * AC에 따른 TXOP Limit 값과 연관성이 있음
-    * 자세한 분석은 [Appendix A](#appendix-a)을 참조
+    * 자세한 분석은 [Appendix A](#appendix-a) 참조
     ```
     1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
     2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
