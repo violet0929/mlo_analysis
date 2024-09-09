@@ -238,7 +238,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 <p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
 
   * 하나씩 순서대로 뜯자.
-  * 1. ns3::ChannelAccessManager::AccessTimeout
+  * (중요도 하) 1. ns3::ChannelAccessManager::AccessTimeout
 ```c
 void
 ChannelAccessManager::AccessTimeout()
@@ -251,7 +251,7 @@ ChannelAccessManager::AccessTimeout()
 ```
   * backoff update 말고 뭐 없다 패스
 
-  * (⭐중요) 2. ns3::ChannelAccessManager::DoGrantDcfAccess
+  * (⭐ 중요도 상) 2. ns3::ChannelAccessManager::DoGrantDcfAccess
 ```c
 void
 ChannelAccessManager::DoGrantDcfAccess()
@@ -340,7 +340,7 @@ ChannelAccessManager::DoGrantDcfAccess()
     * 구현 이슈인거 같음: 변경 사항을 획득한 txop의 전송 전에 적용하면 전역 변수 변경과 같은 문제 야기
   * 내부 경쟁이 끝나면 EDCAF에서 txop에 대한 전송을 시작함.
 
-  * 3. ns3::EhtFrameExchangeManager::StartTransmission
+  * (중요도 하) 3. ns3::EhtFrameExchangeManager::StartTransmission
 ```c
 bool
 EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth)
@@ -395,7 +395,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 언제 사용? PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
   * 관련 없음. 패스
 
-  * (⭐매우 중요 여기가 거의 9할 이라고 해도 무방) 5. ns3::QosFrameExchangeManager::StartTransmission
+  * (⭐ 중요도 최상 여기가 거의 9할 이라고 해도 무방) 5. ns3::QosFrameExchangeManager::StartTransmission
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
