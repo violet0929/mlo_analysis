@@ -498,7 +498,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
     * return false
       
   ### 6. ns3::HeFrameExchangeManager::StartFrameExchange (중요도 하)
-```
+```c
 bool
 HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
 {
@@ -567,7 +567,7 @@ HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
   * SU_TX 사용함. 관련 없음. 패스.
 
   ### 7. ns3::HtFrameExchangeManager::StartFrameExchange (⭐ 중요도 최상 여기가 거의 4할)
-```
+```c
 bool
 HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
 {
