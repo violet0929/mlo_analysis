@@ -188,4 +188,4 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 ## Appendix A
   *  WifiNetDevice architecture. For 802.11be Multi-Link Devices (MLDs), there as many instances of WifiPhy, FrameExchangeManager and ChannelAccessManager as the number of links.
   ![image](https://www.nsnam.org/docs/release/3.40/models/singlehtml/_images/WifiArchitecture.png)
-  * 출처: https://www.nsnam.org/docs/release/3.40/models/singlehtml/index.html#document-wifi
+#### Reference: https://www.nsnam.org/docs/release/3.40/models/singlehtml/index.html#document-wifi
