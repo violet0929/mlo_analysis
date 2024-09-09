@@ -18,11 +18,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ## Package
 * python: 3.12
-* pip: 24.2
-* pytorch: 2.3.1+cu118
-* numpy: 1.26.0
-* pandas: 2.2.2
-* matplotlib: 3.9.0
 
 ## Running
 * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
