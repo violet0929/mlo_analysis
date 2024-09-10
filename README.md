@@ -637,7 +637,7 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     * ADDBA Request 프레임이 전송되는 조건은??? NeedSetupBlockAck function에서 true를 반환할 때 -> 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck 확인
   * 조건 2.1. 일반적인 전송
     * Alias는 별칭, 별명을 뜻하며 해당 함수는 그냥 copy를 생각하면 됨
-  * 조건 2.2. 특정 조건에 부합한 전송 (해당되지 않음 나중에 심심하면 뜽어봐야지)
+  * 조건 2.2. 특정 조건에 부합한 전송 (해당되지 않음 나중에 심심하면 해야지)
     * 특정조건 1. Frame이 QoS data가 아닌 경우
     * 특정조건 2. Frame이 QoS data이지만, broadcast인 경우
     * 특정조건 3. Frame이 fragmentation된 경우
