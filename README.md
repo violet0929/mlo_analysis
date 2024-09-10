@@ -634,8 +634,8 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
   * 조건 1. BlockAckAgreement
     * 이 경우 데이터가 전송되는 것이 아닌 ADDBA Request 프레임을 전송하며, 초기 STA 및 AP 간 BlockAck session 설정에 목적이 있음
     * ADDBA Request는 재전송을 수행하기 위한 BA Request와 다른 프레임임
-      
-<p align="center"><img src="![image](https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435)"></p>
+<p align="center"><img src="https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435"</p>
+
   
   * 조건 2. 일반적인 상황에서의 전송
   * 조건 3. 특정 상황에서의 전송
