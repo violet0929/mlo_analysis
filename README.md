@@ -907,7 +907,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
 }
 ```
 * 획득한 TXOP의 MAC Queue를 순회하면서 mpdu list를 만드는데 여기서 2가지의 조건을 기준으로 aggregation을 수행함
-  * 조건 1. 현재 검색된 mpdu의 seq#가 현재 시점의 수신 device 시작 seq#와 최대 buffer 크기 범위에 포함되는지
+  * 조건 1. 현재 검색된 mpdu의 seq#가 현재 시점의 수신 device의 수신 윈도우 크기에 포함되어야 함
   ```c
   bool
   IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
@@ -916,11 +916,57 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   }
   ```
   * 조건 2. nextMpdu가 nullptr이 되기 전까지
-* 근데, 조건 1에는 안걸림 (debug 해보면, 수신 device의 수신받아야하는 시작 seq#: 117, 최대 buffer 크기: 256이므로, 이렇게 따지면 140개가 aggregation 되야함)
-* 조건 2에 걸림 그럼 왜 왜 #234 ~ #272까지 aggregation 되는지 확인해야함 즉, #273은 왜 안되는지
+* 근데, 조건 1에는 안걸림 (debug 해보면, 현재 시점의 수신 device의 수신 윈도우는 117 ~ 256이므로, 이렇게 따지면 140개가 aggregation 되야함)
+* 조건 2에 걸림 그럼 왜 왜 #234 ~ #272까지 aggregation 되는지 확인해야함 (즉, #273은 왜 안되는지)
+* 따라서, 추가적인 코드를 통해 BP 걸어주고 서브루틴 진입
 * 서브루틴이 정말 많음
   * ns3::MpduAggregator::GetNextAmpdu
   * ns3::QosTxop::GetNextMpdu
   * ns3::QosFrameExchangeManager::TryAddMpdu
   * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
   * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 여기서 답 찾을 수 있음 8.2.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
+ 
+### 8.2.1 ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (동작 분석)
+```c
+bool
+QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
+                                                   Mac48Address receiver,
+                                                   const WifiTxParameters& txParams,
+                                                   Time ppduDurationLimit) const
+{
+    NS_LOG_FUNCTION(this << ppduPayloadSize << receiver << &txParams << ppduDurationLimit);
+
+    if (ppduDurationLimit != Time::Min() && ppduDurationLimit.IsNegative())
+    {
+        NS_LOG_DEBUG("ppduDurationLimit is null or negative, time limit is trivially exceeded");
+        return false;
+    }
+
+    if (ppduPayloadSize > WifiPhy::GetMaxPsduSize(txParams.m_txVector.GetModulationClass()))
+    {
+        NS_LOG_DEBUG("the frame exceeds the max PSDU size");
+        return false;
+    }
+
+    // Get the maximum PPDU Duration based on the preamble type
+    Time maxPpduDuration = GetPpduMaxTime(txParams.m_txVector.GetPreambleType());
+
+    Time txTime = GetTxDuration(ppduPayloadSize, receiver, txParams);
+    NS_LOG_DEBUG("PPDU duration: " << txTime.As(Time::MS));
+
+    if ((ppduDurationLimit.IsStrictlyPositive() && txTime > ppduDurationLimit) ||
+        (maxPpduDuration.IsStrictlyPositive() && txTime > maxPpduDuration))
+    {
+        NS_LOG_DEBUG(
+            "the frame does not meet the constraint on max PPDU duration or PPDU duration limit");
+        return false;
+    }
+
+    return true;
+}
+```
+  * 첫 번째 인자 값 ppduPayloadSize는 현재 mpduList에 포함된 전체 크기를 뜻함
+  * 세 번째 인자 값 txParams는 송신기의 현재 MAC 및 PHY 속성 값들을 포함하고 있음 (asmduSize, ampduSize, seqNumbers, txVector 등등...)
+  * 이걸 기반으로 maxPpduDuration (기준)과 txTime (예상)을 계산함
+  * 이때, 예상 전송 시간 txTime 값이 기준이 되는 maxPpduDuration 값 보다 더 크기 때문에 false를 리턴함
+  * 해석하면, 사전에 설정된 PHY 파라미터를 기준으로 Preamble (헤더)정보를 생성하는데, 해당 기준을 초과하여 데이터를 전송할 수가 없다는 뜻임
