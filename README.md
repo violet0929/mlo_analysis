@@ -396,7 +396,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
   * 언제 사용? PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
   * 관련 없음. 패스
 
-  ### 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 거의 4할)
+  ### 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 3할)
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
@@ -566,7 +566,7 @@ HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
   * 802.11ax에서 지원하는 Multi-User Transmission 관련 내용
   * SU_TX 사용함. 관련 없음. 패스.
 
-  ### 7. ns3::HtFrameExchangeManager::StartFrameExchange (⭐ 중요도 최상 여기가 거의 4할)
+  ### 7. ns3::HtFrameExchangeManager::StartFrameExchange (⭐ 중요도 최상 여기가 3할)
 ```c
 bool
 HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
@@ -636,8 +636,16 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     * ADDBA Request는 재전송을 수행하기 위한 BA Request와 다른 프레임임
 <p align="center"><img src="https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435"</p>
     * ADDBA Request 프레임이 전송되는 조건은??? NeedSetupBlockAck function에서 true를 반환할 때 -> 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck 확인
+  * 조건 2.1. 일반적인 전송
+    * Alias는 별칭, 별명을 뜻하며 해당 함수는 그냥 copy를 생각하면 됨
+  * 조건 2.2. 특정 조건에 부합한 전송 (해당되지 않음 나중에 심심하면 뜽어봐야지)
+    * 특정조건 1. Frame이 QoS data가 아닌 경우
+    * 특정조건 2. Frame이 QoS data이지만, broadcast인 경우
+    * 특정조건 3. Frame이 fragmentation된 경우
+    * 특정조건 4. Frame이 fragmentation되야 하는 경우
+
   
-### 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck (ADDBA Request 프레임이 전송되는 조건)  
+  ### 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck (ADDBA Request 프레임이 전송되는 조건)  
 ```c
 bool
 HtFrameExchangeManager::NeedSetupBlockAck(Mac48Address recipient, uint8_t tid)
@@ -678,5 +686,55 @@ HtFrameExchangeManager::NeedSetupBlockAck(Mac48Address recipient, uint8_t tid)
     * 조건 2. 사전에 설정된 aggregator가 지원하는 최대 A-MPDU 크기가 0보다 크고, MAC queue에 있는 packet 개수가 0보다 큰 경우
     * 조건 3. RemoteStationManager가 VHT 표준을 지원하는 경우
       * ns-3 RemoteStationManager: 동일 link에 association되어 있는 모든 device를 관리하는 클래스
-  > Note: 각 조건 별 debug 수행했을때, 조건 3에 걸리고 나머지 조건에는 안걸림 (초기 aggrement가 establishment 이후 true를 반환하는 경우가 없었음. 즉, false를 반환하는 조건문에 안 걸린 경우가 없음)
-    
+  > Note: 각 조건 별 debug 수행했을때, 조건 3에 걸리고 나머지 조건에는 안걸림 (초기 agreement가 establishment 이후 true를 반환하는 경우가 없었음. 즉, false를 반환하는 조건문에 안 걸린 경우가 없음)
+ 
+  ### 8. ns3::HtFrameExchangeManager::SendDataFrame (⭐ 중요도 최상 여기가 3할)
+```c
+bool
+HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
+                                      Time availableTime,
+                                      bool initialFrame)
+{
+    NS_ASSERT(peekedItem && peekedItem->GetHeader().IsQosData() &&
+              !peekedItem->GetHeader().GetAddr1().IsBroadcast() && !peekedItem->IsFragment());
+    NS_LOG_FUNCTION(this << *peekedItem << availableTime << initialFrame);
+
+    Ptr<QosTxop> edca = m_mac->GetQosTxop(peekedItem->GetHeader().GetQosTid());
+    WifiTxParameters txParams;
+    txParams.m_txVector =
+        GetWifiRemoteStationManager()->GetDataTxVector(peekedItem->GetHeader(), m_allowedWidth);
+    Ptr<WifiMpdu> mpdu =
+        edca->GetNextMpdu(m_linkId, peekedItem, txParams, availableTime, initialFrame);
+
+    if (!mpdu)
+    {
+        NS_LOG_DEBUG("Not enough time to transmit a frame");
+        return false;
+    }
+
+    // try A-MPDU aggregation
+    std::vector<Ptr<WifiMpdu>> mpduList =
+        m_mpduAggregator->GetNextAmpdu(mpdu, txParams, availableTime);
+    NS_ASSERT(txParams.m_acknowledgment);
+
+    if (mpduList.size() > 1)
+    {
+        // A-MPDU aggregation succeeded
+        SendPsduWithProtection(Create<WifiPsdu>(std::move(mpduList)), txParams);
+    }
+    else if (txParams.m_acknowledgment->method == WifiAcknowledgment::BAR_BLOCK_ACK)
+    {
+        // a QoS data frame using the Block Ack policy can be followed by a BlockAckReq
+        // frame and a BlockAck frame. Such a sequence is handled by the HT FEM
+        SendPsduWithProtection(Create<WifiPsdu>(mpdu, false), txParams);
+    }
+    else
+    {
+        // transmission can be handled by the base FEM
+        SendMpduWithProtection(mpdu, txParams);
+    }
+
+    return true;
+}
+```
+  * 마지막이다.
