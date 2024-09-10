@@ -906,7 +906,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
     return mpduList;
 }
 ```
-* 획득한 TXOP의 MAC Queue를 순회하면서 mpdu list를 만드는데 여기서 2가지의 조건을 기준으로 aggregation을 수행함
+* 획득한 TXOP의 MAC Queue를 순회 (in-flight 상태가 아닌)하면서 mpdu list를 만드는데 여기서 2가지의 조건을 기준으로 aggregation을 수행함
   * 조건 1. 현재 검색된 mpdu의 seq#가 현재 시점의 수신 device의 수신 윈도우 크기에 포함되어야 함
   ```c
   bool
