@@ -699,6 +699,12 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
               !peekedItem->GetHeader().GetAddr1().IsBroadcast() && !peekedItem->IsFragment());
     NS_LOG_FUNCTION(this << *peekedItem << availableTime << initialFrame);
 
+    /* 추가 */
+    if(peekedItem->GetHeader().GetSequenceNumber() == 234 && peekedItem->GetHeader().GetQosTid() == 3){
+        NS_LOG_UNCOND("BP");
+    }
+    /* 추가 */
+
     Ptr<QosTxop> edca = m_mac->GetQosTxop(peekedItem->GetHeader().GetQosTid());
     WifiTxParameters txParams;
     txParams.m_txVector =
@@ -737,4 +743,159 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
     return true;
 }
 ```
-  * 마지막이다.
+  > Note: wifi-phy.cc에 bp 걸고 해당 함수로 왔을 때 mpduList가 출력이 안되는 현상이 있음 (이유는 모름) 그래서 해당 코드 상단에 다시 bp 걸어줌
+  * m_mpduAggregator->GetNextAmpdu()를 통해, mpduList를 생성함 (이때, 넘기는 인자 mpdu, txParams, availableTime은 아래 내용과 같음)
+  * mpdu: edca->GetNextMpdu()에서 반환되는 값
+  * txParams: mpdu 헤더 정보 및 채널 대역을 기반으로 한 PHY 계층과 관련있는 변수 값을 벡터로 생성 
+  * availableTime: TXOP limit 값과 연관성이 있음 (남은 시간)
+  * mpduList의 크기가 1보다 큰 경우, SendPsduWithProtection(psdu) 실행
+  * 단일 mpdu 전송인 경우, SendMpduWithProtection(mpdu) 실행
+  * 결론적으로 edca->GetNextMpdu()의 동작, m_mpduAggregator->GetNextAmpdu()의 동작만 분석하면 됨
+    * edca->GetNextMpdu() 동작: 8.1. Ptr<WifiMpdu> QosTxop::GetNextMpdu 참고
+    * m_mpduAggregator->GetNextAmpdu() 동작: 8.2. std::vector<Ptr<WifiMpdu>> MpduAggregator::GetNextAmpdu 참고
+
+    ### 8.1. Ptr<WifiMpdu> QosTxop::GetNextMpdu (동작 분석)
+```c
+Ptr<WifiMpdu>
+QosTxop::GetNextMpdu(uint8_t linkId,
+                     Ptr<WifiMpdu> peekedItem,
+                     WifiTxParameters& txParams,
+                     Time availableTime,
+                     bool initialFrame)
+{
+    NS_ASSERT(peekedItem);
+    NS_LOG_FUNCTION(this << +linkId << *peekedItem << &txParams << availableTime << initialFrame);
+
+    Mac48Address recipient = peekedItem->GetHeader().GetAddr1();
+
+    // The TXOP limit can be exceeded by the TXOP holder if it does not transmit more
+    // than one Data or Management frame in the TXOP and the frame is not in an A-MPDU
+    // consisting of more than one MPDU (Sec. 10.22.2.8 of 802.11-2016)
+    Time actualAvailableTime =
+        (initialFrame && txParams.GetSize(recipient) == 0 ? Time::Min() : availableTime);
+
+    auto qosFem = StaticCast<QosFrameExchangeManager>(m_mac->GetFrameExchangeManager(linkId));
+    if (!qosFem->TryAddMpdu(peekedItem, txParams, actualAvailableTime))
+    {
+        return nullptr;
+    }
+
+    NS_ASSERT(peekedItem->IsQueued());
+    Ptr<WifiMpdu> mpdu;
+
+    // If it is a non-broadcast QoS Data frame and it is not a retransmission nor a fragment,
+    // attempt A-MSDU aggregation
+    if (peekedItem->GetHeader().IsQosData())
+    {
+        uint8_t tid = peekedItem->GetHeader().GetQosTid();
+
+        // we should not be asked to dequeue an MPDU that is beyond the transmit window.
+        // Note that PeekNextMpdu() temporarily assigns the next available sequence number
+        // to the peeked frame
+        NS_ASSERT(!m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid) ||
+                  IsInWindow(
+                      peekedItem->GetHeader().GetSequenceNumber(),
+                      GetBaStartingSequence(peekedItem->GetOriginal()->GetHeader().GetAddr1(), tid),
+                      GetBaBufferSize(peekedItem->GetOriginal()->GetHeader().GetAddr1(), tid)));
+
+        // try A-MSDU aggregation
+        if (m_mac->GetHtSupported() && !recipient.IsBroadcast() &&
+            !peekedItem->HasSeqNoAssigned() && !peekedItem->IsFragment())
+        {
+            auto htFem = StaticCast<HtFrameExchangeManager>(qosFem);
+            mpdu = htFem->GetMsduAggregator()->GetNextAmsdu(peekedItem, txParams, availableTime);
+        }
+
+        if (mpdu)
+        {
+            NS_LOG_DEBUG("Prepared an MPDU containing an A-MSDU");
+        }
+        // else aggregation was not attempted or failed
+    }
+
+    if (!mpdu)
+    {
+        mpdu = peekedItem;
+    }
+
+    // Assign a sequence number if this is not a fragment nor a retransmission
+    AssignSequenceNumber(mpdu);
+    NS_LOG_DEBUG("Got MPDU from EDCA queue: " << *mpdu);
+
+    return mpdu;
+}
+```
+  * 길어보이지만 다 필요없다. 왜냐하면 A-msdu aggregation을 수행하지 않음
+  * 수행하지 않는 이유
+    * htFem->GetMsduAggregator()->GetNextAmsdu(peekedItem, txParams, availableTime) 함수 들어가서
+    * uint16_t maxAmsduSize = m_mac->GetMaxAmsduSize(ac) 를 통해 MaxAmsduSize 들고오는데, 별도 설정을 하지않았으므로 0 (disable)이 리턴됨
+  * 결론적으로 mpdu = peekedItem이 됨 즉, copy임
+
+    ### 8.2. std::vector<Ptr<WifiMpdu>> MpduAggregator::GetNextAmpdu (동작 분석, 여기가 좀 중요함)
+```c
+std::vector<Ptr<WifiMpdu>>
+MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
+                             WifiTxParameters& txParams,
+                             Time availableTime) const
+{
+    NS_LOG_FUNCTION(this << *mpdu << &txParams << availableTime);
+
+    std::vector<Ptr<WifiMpdu>> mpduList;
+
+    Mac48Address recipient = mpdu->GetHeader().GetAddr1();
+    NS_ASSERT(mpdu->GetHeader().IsQosData() && !recipient.IsBroadcast());
+    uint8_t tid = mpdu->GetHeader().GetQosTid();
+    auto origRecipient = mpdu->GetOriginal()->GetHeader().GetAddr1();
+
+    Ptr<QosTxop> qosTxop = m_mac->GetQosTxop(tid);
+    NS_ASSERT(qosTxop);
+
+    // Have to make sure that the block ack agreement is established and A-MPDU is enabled
+    if (m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid) &&
+        GetMaxAmpduSize(recipient, tid, txParams.m_txVector.GetModulationClass()) > 0)
+    {
+        /* here is performed MPDU aggregation */
+        Ptr<WifiMpdu> nextMpdu = mpdu;
+
+        while (nextMpdu)
+        {
+            // if we are here, nextMpdu can be aggregated to the A-MPDU.
+            NS_LOG_DEBUG("Adding packet with sequence number "
+                         << nextMpdu->GetHeader().GetSequenceNumber()
+                         << " to A-MPDU, packet size = " << nextMpdu->GetSize()
+                         << ", A-MPDU size = " << txParams.GetSize(recipient));
+
+            mpduList.push_back(nextMpdu);
+
+            // If allowed by the BA agreement, get the next MPDU
+            auto peekedMpdu =
+                qosTxop->PeekNextMpdu(m_linkId, tid, origRecipient, nextMpdu->GetOriginal());
+            nextMpdu = nullptr;
+
+            if (peekedMpdu)
+            {
+                // PeekNextMpdu() does not return an MPDU that is beyond the transmit window
+                NS_ASSERT(IsInWindow(peekedMpdu->GetHeader().GetSequenceNumber(),
+                                     qosTxop->GetBaStartingSequence(origRecipient, tid),
+                                     qosTxop->GetBaBufferSize(origRecipient, tid)));
+
+                peekedMpdu = m_htFem->CreateAliasIfNeeded(peekedMpdu);
+                // get the next MPDU to aggregate, provided that the constraints on size
+                // and duration limit are met. Note that the returned MPDU differs from
+                // the peeked MPDU if A-MSDU aggregation is enabled.
+                NS_LOG_DEBUG("Trying to aggregate another MPDU");
+                nextMpdu =
+                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
+            }
+        }
+
+        if (mpduList.size() == 1)
+        {
+            // return an empty vector if it was not possible to aggregate at least two MPDUs
+            mpduList.clear();
+        }
+    }
+
+    return mpduList;
+}
+```
