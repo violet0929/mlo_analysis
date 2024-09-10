@@ -746,8 +746,8 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
   > Note: wifi-phy.cc에 bp 걸고 해당 함수로 왔을 때 mpduList가 출력이 안되는 현상이 있음 (이유는 모름) 그래서 해당 코드 상단에 다시 bp 걸어줌
   * m_mpduAggregator->GetNextAmpdu()를 통해, mpduList를 생성함 (이때, 넘기는 인자 mpdu, txParams, availableTime은 아래 내용과 같음)
   * mpdu: edca->GetNextMpdu()에서 반환되는 값
-  * txParams: mpdu 헤더 정보 및 채널 대역을 기반으로 한 PHY 계층과 관련있는 변수 값을 벡터로 생성 
-  * availableTime: TXOP limit 값과 연관성이 있음 (남은 시간)
+  * txParams: 송신기의 현재 MAC 및 PHY 속성 값들을 포함, txVector는 PHY 계층 정보를 포함하고 있음
+  * availableTime: 데이터가 전송 가능한 유효 시간 (BE의 경우 할당되어 있지 않음)
   * mpduList의 크기가 1보다 큰 경우, SendPsduWithProtection(psdu) 실행
   * 단일 mpdu 전송인 경우, SendMpduWithProtection(mpdu) 실행
   * 결론적으로 edca->GetNextMpdu()의 동작, m_mpduAggregator->GetNextAmpdu()의 동작만 분석하면 됨
