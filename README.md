@@ -634,9 +634,6 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
   * 조건 1. BlockAckAgreement
     * 이 경우 데이터가 전송되는 것이 아닌 ADDBA Request 프레임을 전송하며, 초기 STA 및 AP 간 BlockAck session 설정에 목적이 있음
     * ADDBA Request는 재전송을 수행하기 위한 BA Request와 다른 프레임임
-      
-<p align="center"><img src="https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435"</p>
-  
     * ADDBA Request 프레임이 전송되는 조건은??? NeedSetupBlockAck function에서 true를 반환할 때 -> 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck 확인
   * 조건 2.1. 일반적인 전송
     * Alias는 별칭, 별명을 뜻하며 해당 함수는 그냥 copy를 생각하면 됨
@@ -645,7 +642,8 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     * 특정조건 2. Frame이 QoS data이지만, broadcast인 경우
     * 특정조건 3. Frame이 fragmentation된 경우
     * 특정조건 4. Frame이 fragmentation되야 하는 경우
-
+          
+<p align="center"><img src="https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435"</p>
   
   ### 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck (ADDBA Request 프레임이 전송되는 조건)  
 ```c
