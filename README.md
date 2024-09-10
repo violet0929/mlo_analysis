@@ -635,13 +635,48 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     * 이 경우 데이터가 전송되는 것이 아닌 ADDBA Request 프레임을 전송하며, 초기 STA 및 AP 간 BlockAck session 설정에 목적이 있음
     * ADDBA Request는 재전송을 수행하기 위한 BA Request와 다른 프레임임
 <p align="center"><img src="https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435"</p>
-
+    * ADDBA Request 프레임이 전송되는 조건은??? NeedSetupBlockAck function에서 true를 반환할 때 -> 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck 확인
   
-  * 조건 2. 일반적인 상황에서의 전송
-  * 조건 3. 특정 상황에서의 전송
-    * 특정 상황 1. 프레임이 QoS Frame이 아닌 경우
-    * 특정 상황 2. Broadcast QoS Frame인 경우
-    * 특정 상황 3. Fragment된 Frame인 경우
-    * 특정 상황 4. Frame이 Fragmentation을 수행해서 전송해야 하는 경우
-   
-## 졸리다 내일하자...
+### 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck (ADDBA Request 프레임이 전송되는 조건)  
+```c
+bool
+HtFrameExchangeManager::NeedSetupBlockAck(Mac48Address recipient, uint8_t tid)
+{
+    Ptr<QosTxop> qosTxop = m_mac->GetQosTxop(tid);
+    bool establish;
+
+    if (!GetWifiRemoteStationManager()->GetHtSupported(recipient))
+    {
+        establish = false;
+    }
+    else if (auto agreement = qosTxop->GetBaManager()->GetAgreementAsOriginator(recipient, tid);
+             agreement && !agreement->get().IsReset())
+    {
+        establish = false;
+    }
+    else
+    {
+        WifiContainerQueueId queueId{WIFI_QOSDATA_QUEUE, WIFI_UNICAST, recipient, tid};
+        uint32_t packets = qosTxop->GetWifiMacQueue()->GetNPackets(queueId);
+        establish =
+            ((qosTxop->GetBlockAckThreshold() > 0 && packets >= qosTxop->GetBlockAckThreshold()) ||
+             (m_mpduAggregator->GetMaxAmpduSize(recipient, tid, WIFI_MOD_CLASS_HT) > 0 &&
+              packets > 1) ||
+             GetWifiRemoteStationManager()->GetVhtSupported());
+    }
+
+    NS_LOG_FUNCTION(this << recipient << +tid << establish);
+    return establish;
+}
+```
+  * return 값 bool 변수 establish가 true를 반환하려면 앞서 false를 반환하는 조건문 2개에 해당되지 않고, 마지막 조건문에서 true를 할당받아야 함
+  * false를 반환하는 조건문 1: recipient (수신 device)가 HT 표준을 지원하지 않는 경우 -> BlockAck 메커니즘은 802.11n(HT) 표준 이후로 사용됨
+  * false를 반환하는 조건문 2: 이미 agreement가 존재하고, agreement의 상태가 reset이 아닌 경우 (originator와 recipent간의 blockack session이 유효한 경우)
+  * 마지막 조건문에서 true가 반환되려면 아래 조건 3개 중 하나를 만족해야 함
+    * 조건 1. 현재 할당된 TXOP의 BlockAck threshold가 0보다 크고, MAC queue에 있는 packet 개수가 threshold 보다 크거나 같은 경우
+      * BlockAck threshold: MAC에서도 ACK를 지원하는데, 몇 개의 패킷을 보냇을때 Block ACK를 받을 건지 결정하는 값
+    * 조건 2. 사전에 설정된 aggregator가 지원하는 최대 A-MPDU 크기가 0보다 크고, MAC queue에 있는 packet 개수가 0보다 큰 경우
+    * 조건 3. RemoteStationManager가 VHT 표준을 지원하는 경우
+      * ns-3 RemoteStationManager: 동일 link에 association되어 있는 모든 device를 관리하는 클래스
+  > Note: 각 조건 별 debug 수행했을때, 조건 3에 걸리고 나머지 조건에는 안걸림 (초기 설정 이후 reset이 되는 case가 없었음)
+    
