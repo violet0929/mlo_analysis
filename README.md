@@ -678,5 +678,5 @@ HtFrameExchangeManager::NeedSetupBlockAck(Mac48Address recipient, uint8_t tid)
     * 조건 2. 사전에 설정된 aggregator가 지원하는 최대 A-MPDU 크기가 0보다 크고, MAC queue에 있는 packet 개수가 0보다 큰 경우
     * 조건 3. RemoteStationManager가 VHT 표준을 지원하는 경우
       * ns-3 RemoteStationManager: 동일 link에 association되어 있는 모든 device를 관리하는 클래스
-  > Note: 각 조건 별 debug 수행했을때, 조건 3에 걸리고 나머지 조건에는 안걸림 (초기 설정 이후 reset이 되는 case가 없었음)
+  > Note: 각 조건 별 debug 수행했을때, 조건 3에 걸리고 나머지 조건에는 안걸림 (초기 aggrement가 establishment 이후 true를 반환하는 경우가 없었음. 즉, false를 반환하는 조건문에 안 걸린 경우가 없음)
     
