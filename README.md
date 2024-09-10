@@ -751,10 +751,10 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
   * mpduList의 크기가 1보다 큰 경우, SendPsduWithProtection(psdu) 실행
   * 단일 mpdu 전송인 경우, SendMpduWithProtection(mpdu) 실행
   * 결론적으로 edca->GetNextMpdu()의 동작, m_mpduAggregator->GetNextAmpdu()의 동작만 분석하면 됨
-    * edca->GetNextMpdu() 동작: 8.1. Ptr<WifiMpdu> QosTxop::GetNextMpdu 참고
-    * m_mpduAggregator->GetNextAmpdu() 동작: 8.2. std::vector<Ptr<WifiMpdu>> MpduAggregator::GetNextAmpdu 참고
+    * edca->GetNextMpdu() 동작: 8.1. ns3::QosTxop::GetNextMpdu 참고
+    * m_mpduAggregator->GetNextAmpdu() 동작: 8.2. ns3::MpduAggregator::GetNextAmpdu 참고
 
-    ### 8.1. Ptr<WifiMpdu> QosTxop::GetNextMpdu (동작 분석)
+    ### 8.1. ns3::QosTxop::GetNextMpdu (동작 분석)
 ```c
 Ptr<WifiMpdu>
 QosTxop::GetNextMpdu(uint8_t linkId,
@@ -831,7 +831,7 @@ QosTxop::GetNextMpdu(uint8_t linkId,
     * uint16_t maxAmsduSize = m_mac->GetMaxAmsduSize(ac) 를 통해 MaxAmsduSize 들고오는데, 별도 설정을 하지않았으므로 0 (disable)이 리턴됨
   * 결론적으로 mpdu = peekedItem이 됨 즉, copy임
 
-    ### 8.2. std::vector<Ptr<WifiMpdu>> MpduAggregator::GetNextAmpdu (동작 분석, 여기가 좀 중요함)
+    ### 8.2. ns3::MpduAggregator::GetNextAmpdu (동작 분석, 여기가 좀 중요함)
 ```c
 std::vector<Ptr<WifiMpdu>>
 MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
@@ -886,6 +886,13 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
                 NS_LOG_DEBUG("Trying to aggregate another MPDU");
                 nextMpdu =
                     qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
+                /* 추가 */
+                if (nextMpdu){
+                    if(nextMpdu->GetHeader().GetSequenceNumber() == 272 && nextMpdu->GetHeader().GetQosTid() == 3){
+                        NS_LOG_UNCOND("BP");
+                    }
+                }
+                /* 추가 */
             }
         }
 
@@ -899,3 +906,21 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
     return mpduList;
 }
 ```
+* 획득한 TXOP의 MAC Queue를 순회하면서 mpdu list를 만드는데 여기서 2가지의 조건을 기준으로 aggregation을 수행함
+  * 조건 1. 현재 검색된 mpdu의 seq#가 현재 시점의 수신 device 시작 seq#와 최대 buffer 크기 범위에 포함되는지
+  ```c
+  bool
+  IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
+  {
+    return ((seq - winstart + 4096) % 4096) < winsize;
+  }
+  ```
+  * 조건 2. nextMpdu가 nullptr이 되기 전까지
+* 근데, 조건 1에는 안걸림 (debug 해보면, 수신 device의 수신받아야하는 시작 seq#: 117, 최대 buffer 크기: 256이므로, 이렇게 따지면 140개가 aggregation 되야함)
+* 조건 2에 걸림 그럼 왜 왜 #234 ~ #272까지 aggregation 되는지 확인해야함 즉, #273은 왜 안되는지
+* 서브루틴이 정말 많음
+  * ns3::MpduAggregator::GetNextAmpdu
+  * ns3::QosTxop::GetNextMpdu
+  * ns3::QosFrameExchangeManager::TryAddMpdu
+  * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
+  * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 여기서 답 찾을 수 있음 8.2.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
