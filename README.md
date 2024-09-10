@@ -628,10 +628,14 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
 }
 ```
   * 먼저, 전송할 BA Req 프레임이 있는지 확인 (즉, 특정 AC에 해당하는 MAC queue에 BA req 프레임이 있는 경우)
-    * Note: BA req 프레임 생성은 MPDU expired event가 호출되어야 하고 이는 현재 수행중인 채널 접근 및 데이터 전송과는 독립적으로 발생하는 이벤트임 (따로 루틴 분석을 위한 debug를 해야함) 
+    > Note: BA req 프레임 생성은 MPDU expired event가 호출되어야 하고 이는 현재 수행중인 채널 접근 및 데이터 전송과는 독립적으로 발생하는 이벤트임 (따로 루틴 분석을 위한 debug를 해야함) 
   * 또한, 큐에 MPDU가 있어 채널 접근 요청을 수행했다 하더라도 채널 접근을 위해 대기하는 시간 동안 MPDU의 시간이 만료되었을 수 있으므로 한번 더 체크
   * 결론적으로 크게 3가지의 조건문 존재
   * 조건 1. BlockAckAgreement
+    * 이 경우 데이터가 전송되는 것이 아닌 ADDBA Request 프레임을 전송하며, 초기 STA 및 AP 간 BlockAck session 설정에 목적이 있음
+    * ADDBA Request는 재전송을 수행하기 위한 BA Request와 다른 프레임임
+<p align="center"><img src="![image](https://github.com/user-attachments/assets/0a65f25e-11c8-45ef-9162-01732f63c435)"</p>
+  
   * 조건 2. 일반적인 상황에서의 전송
   * 조건 3. 특정 상황에서의 전송
     * 특정 상황 1. 프레임이 QoS Frame이 아닌 경우
