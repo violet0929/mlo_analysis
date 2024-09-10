@@ -884,18 +884,17 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
                 // and duration limit are met. Note that the returned MPDU differs from
                 // the peeked MPDU if A-MSDU aggregation is enabled.
                 NS_LOG_DEBUG("Trying to aggregate another MPDU");
-                nextMpdu =
-                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
+
                 /* 추가 */
-                if (nextMpdu){
-                    if(nextMpdu->GetHeader().GetSequenceNumber() == 272 && nextMpdu->GetHeader().GetQosTid() == 3){
-                        NS_LOG_UNCOND("BP");
-                    }
+                if(peekedMpdu->GetHeader().GetSequenceNumber() == 273 && peekedMpdu->GetHeader().GetQosTid() == 3){
+                    NS_LOG_UNCOND("BP");
                 }
                 /* 추가 */
+
+                nextMpdu =
+                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
             }
         }
-
         if (mpduList.size() == 1)
         {
             // return an empty vector if it was not possible to aggregate at least two MPDUs
@@ -908,6 +907,8 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
 ```
 * 획득한 TXOP의 MAC Queue를 순회 (in-flight 상태가 아닌)하면서 mpdu list를 만드는데 여기서 2가지의 조건을 기준으로 aggregation을 수행함
   * 조건 1. 현재 검색된 mpdu의 seq#가 현재 시점의 수신 device의 수신 윈도우 크기에 포함되어야 함
+    * winstart: 송신기 입장에서, 현재 수신기가 기대하고 있는 seq # (즉, 송신기 입장에서는 in-flight 상태일 수도 있음)
+    * winsize: 수신기의 최대 buffer 크기
   ```c
   bool
   IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
@@ -916,8 +917,8 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   }
   ```
   * 조건 2. nextMpdu가 nullptr이 되기 전까지
-* 근데, 조건 1에는 안걸림 (debug 해보면, 현재 시점의 수신 device의 수신 윈도우는 117 ~ 256이므로, 이렇게 따지면 140개가 aggregation 되야함)
-* 조건 2에 걸림 그럼 왜 왜 #234 ~ #272까지 aggregation 되는지 확인해야함 (즉, #273은 왜 안되는지)
+* 근데, 조건 1에는 안걸림 (debug 해보면, 현재 시점의 수신 device의 winstart = 117, winsize = 256이므로 이렇게 따지면 #234 ~ #372까지 aggregation 되야함)
+* 조건 2에 걸림 그럼 왜 #234 ~ #272까지 aggregation 되는지 확인해야함 (즉, #273은 왜 안되는지)
 * 따라서, 추가적인 코드를 통해 BP 걸어주고 서브루틴 진입
 * 서브루틴이 정말 많음
   * ns3::MpduAggregator::GetNextAmpdu
