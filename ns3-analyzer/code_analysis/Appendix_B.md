@@ -59,8 +59,8 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 * Call stack은 다음과 같음
 
 <p align="center">  
-  <img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208" width="20%">  
-  <img src="https://github.com/user-attachments/assets/f97d27b4-3abf-49aa-b0a5-1f0a7fd3ac1c" width="20%">
+  <img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208" width="40%">  
+  <img src="https://github.com/user-attachments/assets/f97d27b4-3abf-49aa-b0a5-1f0a7fd3ac1c" width="40%">
   <figcaption align="center">3개 이미지 띄우기</figcaption>\
 </p>
 
