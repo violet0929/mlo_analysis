@@ -365,10 +365,10 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
 * Debug 결과 txTime: 4025200 (4.025ms), maxPpduDuration: 5484000 (5.484ms), ppduDurationLimit: 3906400 (3.906ms)
 * BE는 maxPpduDuration (기준 1)에 걸린 반면, VI는 ppduDurationLimit (기준 2)에 걸림
 * 해석하면, 획득한 TXOP의 유효 시간이 3.906ms인데, 해당 시간을 초과하는 전송 시간을 가진 A-mpdu를 보낼 수 없다는 의미
-* 참고로 mpdu 1개는 1500byte로 설정을 하였음
+* 참고로 mpdu 1개는 1500byte로 설정함
   * 3.906ms에서 1500byte mpdu 1개가 추가되면 예상 전송 시간은 4.025ms가 됨
   * 다르게 해석하면, TXOP를 획득하고 전송한 initial frame의 크기는 1500byte보다 무조건 작음
-  * 왜냐하면, initial frame으로 1500byte 크기의 프레임을 보냈으면 availableTime이 3.906보다 무조건 작았을 수 밖에 없음
+  * 왜냐하면, initial frame으로 1500byte 크기의 프레임을 보냈으면 availableTime이 3.906ms보다 무조건 작았을 수 밖에 없음
  
 ### Summary
 * VI retransmission 과정에서 손실된 원본 프레임의 전체가 아닌 부분적으로 재전송이 수행되는 이유는 TXOP를 획득하고 초기 프레임으로 '무엇'을 전송했기 때문
