@@ -63,10 +63,103 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
   <img src="https://github.com/user-attachments/assets/2bd8535b-5719-4f8f-9df8-1cc978000bc1" width="40%">
 </p>
 
-
 * Appendix.A. AC_BE retransmission과 다른 점만 분석해보면
+  * ns3::ChannelAccessManager::AccessTimeout 없음
+  * ns3::ChannelAccessManager::DoGrantDcfAccess 없음
+  * ns3::EhtFrameExchangeManager::StartTransmission 없음
+* ChannelAccessManager의 특정 AC에 해당하는 TXOP의 backoff가 0에 도달하여 채널 접근을 요청하는 상태를 관리하는 기능을 함
+  * (⭐ 중요) 즉, #174 ~ #201에 해당하는 A-mpdu 재전송은 AC_VI TXOP를 획득한 후 처음으로 보내는 초기 프레임이 아님
+* 이제 중요한 것만 하나씩 뜯자
+  
+### 1. ns3::QosFrameExchangeManager::StartTransmission
+```c
+bool
+QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
+{
+    NS_LOG_FUNCTION(this << edca << txopDuration);
 
+    if (m_pifsRecoveryEvent.IsRunning())
+    {
+        // Another AC (having AIFS=1 or lower, if the user changed the default settings)
+        // gained channel access while performing PIFS recovery. Abort PIFS recovery
+        CancelPifsRecovery();
+    }
 
-### 1. 
+    if (m_txTimer.IsRunning())
+    {
+        m_txTimer.Cancel();
+    }
+    m_dcf = edca;
+    m_edca = edca;
+
+    // We check if this EDCAF invoked the backoff procedure (without terminating
+    // the TXOP) because the transmission of a non-initial frame of a TXOP failed
+    bool backingOff = (m_edcaBackingOff == m_edca);
+
+    if (backingOff)
+    {
+        NS_ASSERT(m_edca->GetTxopLimit(m_linkId).IsStrictlyPositive());
+        NS_ASSERT(m_edca->IsTxopStarted(m_linkId));
+        NS_ASSERT(!m_pifsRecovery);
+        NS_ASSERT(!m_initialFrame);
+
+        // clear the member variable
+        m_edcaBackingOff = nullptr;
+    }
+
+    if (m_edca->GetTxopLimit(m_linkId).IsStrictlyPositive())
+    {
+        // TXOP limit is not null. We have to check if this EDCAF is starting a
+        // new TXOP. This includes the case when the transmission of a non-initial
+        // frame of a TXOP failed and backoff was invoked without terminating the
+        // TXOP. In such a case, we assume that a new TXOP is being started if it
+        // elapsed more than TXOPlimit since the start of the paused TXOP. Note
+        // that GetRemainingTxop returns 0 iff Now - TXOPstart >= TXOPlimit
+        if (!m_edca->IsTxopStarted(m_linkId) ||
+            (backingOff && m_edca->GetRemainingTxop(m_linkId).IsZero()))
+        {
+            // starting a new TXOP
+            m_edca->NotifyChannelAccessed(m_linkId, txopDuration);
+
+            if (StartFrameExchange(m_edca, txopDuration, true))
+            {
+                m_initialFrame = true;
+                return true;
+            }
+
+            // TXOP not even started, return false
+            NS_LOG_DEBUG("No frame transmitted");
+            NotifyChannelReleased(m_edca);
+            m_edca = nullptr;
+            return false;
+        }
+
+        // We are continuing a TXOP, check if we can transmit another frame
+        NS_ASSERT(!m_initialFrame);
+
+        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // BREAKPOINT
+        {
+            NS_LOG_DEBUG("Not enough remaining TXOP time");
+            return SendCfEndIfNeeded();
+        }
+
+        return true;
+    }
+
+    // we get here if TXOP limit is null
+    m_initialFrame = true;
+
+    if (StartFrameExchange(m_edca, Time::Min(), true))
+    {
+        m_edca->NotifyChannelAccessed(m_linkId, Seconds(0));
+        return true;
+    }
+
+    NS_LOG_DEBUG("No frame transmitted");
+    NotifyChannelReleased(m_edca);
+    m_edca = nullptr;
+    return false;
+}
+```
 
 
