@@ -55,6 +55,11 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 > Note 1: Device들의 MAC 주소는 (01 ~ 03: STA1, 04 ~ 06: STA2, 07 ~ 09: AP)가 할당되어 있음  
 > Note 2: Device들은 MLD이므로, 또 하나 유추할 수 있는 점은 장치의 UMAC, L-MAC link 1, L-MAC link 2의 순서대로 MAC 주소가 할당되어 있음
 
+* 결국, 재전송을 수행할 때 원본 패킷의 전부가 날아가지 않는 이유를 분석해야 하기 때문에, retry에 breakpoint 걸어줌
+* Call stack은 다음과 같음
+
+<p align="center"><img src="![image](https://github.com/user-attachments/assets/f97d27b4-3abf-49aa-b0a5-1f0a7fd3ac1c)"</p>
+
 ### 1. 
 
 
