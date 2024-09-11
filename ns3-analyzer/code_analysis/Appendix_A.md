@@ -50,7 +50,9 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
   
 * 이제 wifi-phy.cc에 bp 걸고 함수 call stack을 보면
 
-<p align="center"><img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208"</p>
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208" width="40%">  
+</p>
 
 * 하나씩 순서대로 뜯자.
   
