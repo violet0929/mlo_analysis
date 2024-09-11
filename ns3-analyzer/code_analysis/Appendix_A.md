@@ -1,5 +1,10 @@
 ## Appendix. A. AC_BE retransmssion
 
+### Objective
+* AC_BE 및 AC_VI의 서로 다른 재전송 과정이 발생하는 원인을 찾기 위해
+* 해당 문서에서는 ns-3.40 기반 AC_BE의 재전송 수행 과정을 분석함
+
+### Preview
 * 전체 flow를 보기위해 최하위 계층 wifi-phy.cc의 Send()에서 breakpoint를 걸어야함
   * 아래 코드를 통해 wifi.phy.cc에서 ppdu->psdu->mpdu_list->mpdu 접근 가능
 ```c
