@@ -51,6 +51,7 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 * 시간 간격 확인해보면 같은 로그 맞음
   * Wireshark 기준: 1.084516s - 1.045457s = 39.059ms
   * ns-3 기준: 1.12803s - 1.08898s = 39.05ms
+
 > Note 1: Device들의 MAC 주소는 (01 ~ 03: STA1, 04 ~ 06: STA2, 07 ~ 09: AP)가 할당되어 있음
 > Note 2: Device들은 MLD이므로, 또 하나 유추할 수 있는 점은 장치의 UMAC, L-MAC link 1, L-MAC link 2의 순서대로 MAC 주소가 할당되어 있음
 
