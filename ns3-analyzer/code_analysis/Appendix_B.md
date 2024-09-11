@@ -373,5 +373,5 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
 ### Summary
 * VI retransmission 과정에서 손실된 원본 프레임의 전체가 아닌 부분적으로 재전송이 수행되는 이유는 TXOP를 획득하고 초기 프레임으로 '무엇'을 전송했기 때문
 * TXOP limit의 시간에서 초기 프레임의 전송 시간 만큼 차감이 되었으며, 해당 시간을 기준으로 aggregation을 수행하였기 때문에 마지막 패킷이 aggregation되지 못함
-* BE retranmission과 함수 호출 과정은 거의 유사하나 걸리는 조건이 달랐음
+* BE retransmission과 함수 호출 과정은 거의 유사하나 걸리는 조건이 달랐음
 * 그럼 도대체 initial frame으로 날아간 frame은 무엇일까? Appendix C. 참고
