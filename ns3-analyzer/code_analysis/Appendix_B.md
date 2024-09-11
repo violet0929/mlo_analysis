@@ -319,7 +319,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
   * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 답 찾을 수 있음 2.1.1 ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
  
-### ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (중요도 상)
+### 2.1.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (중요도 상)
 ```c
 bool
 QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
@@ -363,7 +363,7 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
 * maxPpduDuration: txParams의 속성 정보를 기반으로 최대 지원 가능한 전송 시간 (기준 1)
 * ppduDurationLimit: 앞서 TXOP를 obtain하고 initial frame을 전송하고 남은 시간 availableTime (기준 2)
 * Debug 결과 txTime: 4025200 (4.025ms), maxPpduDuration: 5484000 (5.484ms), ppduDurationLimit: 3906400 (3.906ms)
-* BE는 maxPpduDuration에 걸린 반면, VI는 ppduDurationLimit에 걸림
+* BE는 maxPpduDuration (기준 1)에 걸린 반면, VI는 ppduDurationLimit (기준 2)에 걸림
 * 해석하면, 획득한 TXOP의 유효 시간이 3.906ms인데, 해당 시간을 초과하는 전송 시간을 가진 A-mpdu를 보낼 수 없다는 의미
 * 참고로 mpdu 1개는 1500byte로 설정을 하였음
   * 3.906ms에서 1500byte mpdu 1개가 추가되면 예상 전송 시간은 4.025ms가 됨
@@ -371,4 +371,7 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
   * 왜냐하면, initial frame으로 1500byte 크기의 프레임을 보냈으면 availableTime이 3.906보다 무조건 작았을 수 밖에 없음
  
 ### Summary
-* 
+* VI retransmission 과정에서 손실된 원본 프레임의 전체가 아닌 부분적으로 재전송이 수행되는 이유는 TXOP를 획득하고 초기 프레임으로 '무엇'을 전송했기 때문
+* TXOP limit의 시간에서 초기 프레임의 전송 시간 만큼 차감이 되었으며, 해당 시간을 기준으로 aggregation을 수행하였기 때문에 마지막 패킷이 aggregation되지 못함
+* BE retranmission과 함수 호출 과정은 거의 유사하나 걸리는 조건이 달랐음
+* 그럼 도대체 initial frame으로 날아간 frame은 무엇일까? Appendix C. 참고
