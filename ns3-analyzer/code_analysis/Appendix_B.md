@@ -58,7 +58,8 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 * 결국, 재전송을 수행할 때 원본 패킷의 전부가 날아가지 않는 이유를 분석해야 하기 때문에, retry에 breakpoint 걸어줌
 * Call stack은 다음과 같음
 
-<p align="center">[image](https://github.com/user-attachments/assets/f97d27b4-3abf-49aa-b0a5-1f0a7fd3ac1c)</p>
+<p align="center"><img src="https://github.com/user-attachments/assets/f97d27b4-3abf-49aa-b0a5-1f0a7fd3ac1c"</p>
+  
 
 ### 1. 
 
