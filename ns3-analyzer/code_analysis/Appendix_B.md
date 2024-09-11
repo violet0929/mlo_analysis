@@ -56,7 +56,7 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 > Note 2: Device들은 MLD이므로, 또 하나 유추할 수 있는 점은 장치의 UMAC, L-MAC link 1, L-MAC link 2의 순서대로 MAC 주소가 할당되어 있음
 
 * 결국, 재전송을 수행할 때 원본 패킷의 전부가 날아가지 않는 이유를 분석해야 하기 때문에, retry에 breakpoint 걸어줌
-* Call stack은 다음과 같음
+* Call stack은 다음과 같음 (left: AC_BE retransmission, right: AC_VI retransmission)
 
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208" width="40%">  
@@ -65,7 +65,7 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 
 
 * Appendix.A. AC_BE retransmission과 다른 점만 분석해보면
-  ![image]()
+
 
 ### 1. 
 
