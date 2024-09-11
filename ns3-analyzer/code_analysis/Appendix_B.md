@@ -60,13 +60,13 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208" width="40%">  
-  <img src="https://github.com/user-attachments/assets/f97d27b4-3abf-49aa-b0a5-1f0a7fd3ac1c" width="40%">
-  <figcaption align="center">3개 이미지 띄우기</figcaption>
+  <img src="https://github.com/user-attachments/assets/2bd8535b-5719-4f8f-9df8-1cc978000bc1" width="40%">
 </p>
 
 
 * Appendix.A. AC_BE retransmission과 다른 점만 분석해보면
-  
+  ![image]()
+
 ### 1. 
 
 
