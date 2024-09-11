@@ -137,7 +137,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
         // We are continuing a TXOP, check if we can transmit another frame
         NS_ASSERT(!m_initialFrame);
 
-        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // BREAKPOINT
+        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // **BREAKPOINT**
         {
             NS_LOG_DEBUG("Not enough remaining TXOP time");
             return SendCfEndIfNeeded();
