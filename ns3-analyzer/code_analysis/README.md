@@ -7,5 +7,5 @@
   ![image](https://www.nsnam.org/docs/release/3.40/models/singlehtml/_images/WifiArchitecture.png)
 
 ### Appendix
-* Appendix A. AC_BE retransmission
-* Appendix B. AC_VI retransmission
+* A. AC_BE retransmission
+* B. AC_VI retransmission
