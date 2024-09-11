@@ -69,9 +69,9 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
   * ns3::EhtFrameExchangeManager::StartTransmission 없음
 * ChannelAccessManager의 특정 AC에 해당하는 TXOP의 backoff가 0에 도달하여 채널 접근을 요청하는 상태를 관리하는 기능을 함
   * (⭐ 중요) 즉, #174 ~ #201에 해당하는 A-mpdu 재전송은 AC_VI TXOP를 획득한 후 처음으로 보내는 초기 프레임이 아님
-* 이제 중요한 것만 하나씩 뜯자
+* 이제 중요한 것만 하나씩 뜯자 (서브루틴으로 들어가는 code의 line에 BREAKPOINT 표시)
   
-### 1. ns3::QosFrameExchangeManager::StartTransmission
+### 1. ns3::QosFrameExchangeManager::StartTransmission (중요도 중)
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
@@ -137,7 +137,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
         // We are continuing a TXOP, check if we can transmit another frame
         NS_ASSERT(!m_initialFrame);
 
-        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // **BREAKPOINT**
+        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // BREAKPOINT
         {
             NS_LOG_DEBUG("Not enough remaining TXOP time");
             return SendCfEndIfNeeded();
@@ -161,5 +161,214 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
     return false;
 }
 ```
+* 다음과 같은 조건문이 존재함
+  * 조건 1. TXOP limit의 값이 0보다 클 때 (AC_VI 및 AC_VO에 해당)
+    * 조건 1.1 특정 link의 TXOP가 obtain되지 않은 경우 (즉, initial frame 전송에 해당)
+    * 조건 1.2 특정 link의 TXOP limit 값이 남아 있는 경우 (즉, 전송되는 frame은 initial frame이 아님)
+  * 조건 2. TXOP limit의 값이 null일 때 (AC_BE 및 AC_BK에 해당)
+* BREAKPOINT
+  * 조건 1.2.에 해당함
+  * Available Time인 m_edca->GetRemainingTxop(m_linkId)의 값을 보면 3962400ns임 (즉, 3.962ms)가 남아 있음
+  * VI TXOP Limit = 4.096ms임을 감안했을 때 아직 획득한 TXOP에서 frame을 전송하기에는 충분한 시간임 (반대로 말하면, 전송한 initial frame의 크기가 작음)
 
+### 2. ns3::HtFrameExchangeManager::SendDataFrame (중요도 상)
+```c
+bool
+HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
+                                      Time availableTime,
+                                      bool initialFrame)
+{
+    NS_ASSERT(peekedItem && peekedItem->GetHeader().IsQosData() &&
+              !peekedItem->GetHeader().GetAddr1().IsBroadcast() && !peekedItem->IsFragment());
+    NS_LOG_FUNCTION(this << *peekedItem << availableTime << initialFrame);
 
+    /* 추가 */
+    if(peekedItem->GetHeader().GetSequenceNumber() == 174 && peekedItem->GetHeader().GetQosTid() == 5 && peekedItem->GetHeader().IsRetry()){
+        NS_LOG_UNCOND("BP");
+    }
+    /* 추가 */
+    Ptr<QosTxop> edca = m_mac->GetQosTxop(peekedItem->GetHeader().GetQosTid());
+    WifiTxParameters txParams;
+    txParams.m_txVector =
+        GetWifiRemoteStationManager()->GetDataTxVector(peekedItem->GetHeader(), m_allowedWidth);
+    Ptr<WifiMpdu> mpdu =
+        edca->GetNextMpdu(m_linkId, peekedItem, txParams, availableTime, initialFrame);
+
+    if (!mpdu)
+    {
+        NS_LOG_DEBUG("Not enough time to transmit a frame");
+        return false;
+    }
+
+    // try A-MPDU aggregation
+    std::vector<Ptr<WifiMpdu>> mpduList =
+        m_mpduAggregator->GetNextAmpdu(mpdu, txParams, availableTime);
+    NS_ASSERT(txParams.m_acknowledgment);
+
+    if (mpduList.size() > 1)
+    {
+        // A-MPDU aggregation succeeded
+        SendPsduWithProtection(Create<WifiPsdu>(std::move(mpduList)), txParams); // BREAKPOINT
+    }
+    else if (txParams.m_acknowledgment->method == WifiAcknowledgment::BAR_BLOCK_ACK)
+    {
+        // a QoS data frame using the Block Ack policy can be followed by a BlockAckReq
+        // frame and a BlockAck frame. Such a sequence is handled by the HT FEM
+        SendPsduWithProtection(Create<WifiPsdu>(mpdu, false), txParams);
+    }
+    else
+    {
+        // transmission can be handled by the base FEM
+        SendMpduWithProtection(mpdu, txParams);
+    }
+
+    return true;
+}
+```
+* Aggregation 되는 부분까지 와서 추가 코드 기반으로 다시 breakpoint 걸어줌
+* BREAKPOINT
+  * mpdu list를 만드는 것 까지는 BE와 동일하지만, aggregation 되는 과정이 다름
+  * 따라서, GetNextAmpdu() 함수 동작 과정에 대한 분석이 필요함
+ 
+### 2.1. ns3::MpduAggregator::GetNextAmpdu (중요도 상)
+```c
+std::vector<Ptr<WifiMpdu>>
+MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
+                             WifiTxParameters& txParams,
+                             Time availableTime) const
+{
+    NS_LOG_FUNCTION(this << *mpdu << &txParams << availableTime);
+
+    std::vector<Ptr<WifiMpdu>> mpduList;
+
+    Mac48Address recipient = mpdu->GetHeader().GetAddr1();
+    NS_ASSERT(mpdu->GetHeader().IsQosData() && !recipient.IsBroadcast());
+    uint8_t tid = mpdu->GetHeader().GetQosTid();
+    auto origRecipient = mpdu->GetOriginal()->GetHeader().GetAddr1();
+
+    Ptr<QosTxop> qosTxop = m_mac->GetQosTxop(tid);
+    NS_ASSERT(qosTxop);
+
+    // Have to make sure that the block ack agreement is established and A-MPDU is enabled
+    if (m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid) &&
+        GetMaxAmpduSize(recipient, tid, txParams.m_txVector.GetModulationClass()) > 0)
+    {
+        /* here is performed MPDU aggregation */
+        Ptr<WifiMpdu> nextMpdu = mpdu;
+
+        while (nextMpdu)
+        {
+            // if we are here, nextMpdu can be aggregated to the A-MPDU.
+            NS_LOG_DEBUG("Adding packet with sequence number "
+                         << nextMpdu->GetHeader().GetSequenceNumber()
+                         << " to A-MPDU, packet size = " << nextMpdu->GetSize()
+                         << ", A-MPDU size = " << txParams.GetSize(recipient));
+
+            mpduList.push_back(nextMpdu);
+
+            // If allowed by the BA agreement, get the next MPDU
+            auto peekedMpdu =
+                qosTxop->PeekNextMpdu(m_linkId, tid, origRecipient, nextMpdu->GetOriginal());
+            nextMpdu = nullptr;
+
+            if (peekedMpdu)
+            {
+                // PeekNextMpdu() does not return an MPDU that is beyond the transmit window
+                NS_ASSERT(IsInWindow(peekedMpdu->GetHeader().GetSequenceNumber(),
+                                     qosTxop->GetBaStartingSequence(origRecipient, tid),
+                                     qosTxop->GetBaBufferSize(origRecipient, tid)));
+
+                peekedMpdu = m_htFem->CreateAliasIfNeeded(peekedMpdu);
+                // get the next MPDU to aggregate, provided that the constraints on size
+                // and duration limit are met. Note that the returned MPDU differs from
+                // the peeked MPDU if A-MSDU aggregation is enabled.
+                NS_LOG_DEBUG("Trying to aggregate another MPDU");
+
+                /* 추가 */
+                if (peekedMpdu->GetHeader().GetSequenceNumber() == 202 &&
+                        peekedMpdu->GetHeader().GetQosTid() == 5 && peekedMpdu->GetHeader().IsRetry()) {
+                        NS_LOG_UNCOND("BP");
+                }
+                /* 추가 */
+                nextMpdu =
+                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
+
+            }
+        }
+        if (mpduList.size() == 1)
+        {
+            // return an empty vector if it was not possible to aggregate at least two MPDUs
+            mpduList.clear();
+        }
+    }
+
+    return mpduList;
+}
+```
+* #202에 해당하는 mpdu가 aggregation되지 않는 이유를 분석해야 하므로 추가 코드를 기반으로 BP 걸어줌
+* nextMpdu의 값이 null이 되는 이유를 찾으려면 GetNextMpdu() 분석 필요
+* 넘기는 인자 값
+  * m_linkId: 0, 첫 번째 채널을 뜻함
+  * peekedMpdu: #202에 해당하는 mpdu를 뜻함
+  * txParams: MAC 및 PHY 속성 정보
+  * availableTime: 3962400, 남은 TXOP 시간 약 3.962ms
+  * initialFrame: false
+* 서브루틴 목록 (BE와 동일함)
+  * ns3::QosTxop::GetNextMpdu
+  * ns3::QosFrameExchangeManager::TryAddMpdu
+  * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
+  * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 답 찾을 수 있음 2.1.1 ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
+ 
+### ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (중요도 상)
+```c
+bool
+QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
+                                                   Mac48Address receiver,
+                                                   const WifiTxParameters& txParams,
+                                                   Time ppduDurationLimit) const
+{
+    NS_LOG_FUNCTION(this << ppduPayloadSize << receiver << &txParams << ppduDurationLimit);
+
+    if (ppduDurationLimit != Time::Min() && ppduDurationLimit.IsNegative())
+    {
+        NS_LOG_DEBUG("ppduDurationLimit is null or negative, time limit is trivially exceeded");
+        return false;
+    }
+
+    if (ppduPayloadSize > WifiPhy::GetMaxPsduSize(txParams.m_txVector.GetModulationClass()))
+    {
+        NS_LOG_DEBUG("the frame exceeds the max PSDU size");
+        return false;
+    }
+
+    // Get the maximum PPDU Duration based on the preamble type
+    Time maxPpduDuration = GetPpduMaxTime(txParams.m_txVector.GetPreambleType());
+
+    Time txTime = GetTxDuration(ppduPayloadSize, receiver, txParams);
+    NS_LOG_DEBUG("PPDU duration: " << txTime.As(Time::MS));
+
+    if ((ppduDurationLimit.IsStrictlyPositive() && txTime > ppduDurationLimit) ||
+        (maxPpduDuration.IsStrictlyPositive() && txTime > maxPpduDuration))
+    {
+        NS_LOG_DEBUG(
+            "the frame does not meet the constraint on max PPDU duration or PPDU duration limit");
+        return false;
+    }
+
+    return true;
+}
+```
+* BE retransmission과 과정은 똑같은데, 다른 점 딱 하나 있음 (걸리는 조건이 다름)
+* txTime: #202 프레임이 mpdulist에 포함되었을 때, 전송 시간 (예정)
+* maxPpduDuration: txParams의 속성 정보를 기반으로 최대 지원 가능한 전송 시간 (기준 1)
+* ppduDurationLimit: 앞서 TXOP를 obtain하고 initial frame을 전송하고 남은 시간 availableTime (기준 2)
+* Debug 결과 txTime: 4025200 (4.025ms), maxPpduDuration: 5484000 (5.484ms), ppduDurationLimit: 3906400 (3.906ms)
+* BE는 maxPpduDuration에 걸린 반면, VI는 ppduDurationLimit에 걸림
+* 해석하면, 획득한 TXOP의 유효 시간이 3.906ms인데, 해당 시간을 초과하는 전송 시간을 가진 A-mpdu를 보낼 수 없다는 의미
+* 참고로 mpdu 1개는 1500byte로 설정을 하였음
+  * 3.906ms에서 1500byte mpdu 1개가 추가되면 예상 전송 시간은 4.025ms가 됨
+  * 다르게 해석하면, TXOP를 획득하고 전송한 initial frame의 크기는 1500byte보다 무조건 작음
+  * 왜냐하면, initial frame으로 1500byte 크기의 프레임을 보냈으면 availableTime이 3.906보다 무조건 작았을 수 밖에 없음
+ 
+### Summary
+* 
