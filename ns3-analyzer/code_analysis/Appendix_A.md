@@ -1,4 +1,4 @@
-## Appendix. A. Retransmission analysis of AC_BE traffic
+## Appendix. A. AC_BE retransmssion
 
 * 전체 flow를 보기위해 최하위 계층 wifi-phy.cc의 Send()에서 breakpoint를 걸어야함
   * 아래 코드를 통해 wifi.phy.cc에서 ppdu->psdu->mpdu_list->mpdu 접근 가능
