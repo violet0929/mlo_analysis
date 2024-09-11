@@ -971,3 +971,7 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
   * 이걸 기반으로 maxPpduDuration (기준)과 txTime (예상)을 계산함
   * 이때, 예상 전송 시간 txTime 값이 기준이 되는 maxPpduDuration 값 보다 더 크기 때문에 false를 리턴함
   * 해석하면, 사전에 설정된 PHY 파라미터를 기준으로 Preamble (헤더)정보를 생성하는데, 해당 기준을 초과하여 데이터를 전송할 수가 없다는 뜻임
+  * AC_BE에 대한 분석은 끝났고 이제 AC_VI 차례 Appendix B 참고
+
+## Appendix B
+  * 오늘 밤새서 해야 될거
