@@ -496,7 +496,7 @@ HtFrameExchangeManager::NeedSetupBlockAck(Mac48Address recipient, uint8_t tid)
 }
 ```
 * return 값 bool 변수 establish가 true를 반환하려면 앞서 false를 반환하는 조건문 2개에 해당되지 않고, 마지막 조건문에서 true를 할당받아야 함
-* false를 반환하는 조건문 1: recipient (수신 device)가 HT 표준을 지원하지 않는 경우 -> BlockAck 메커니즘은 802.11n(HT) 표준 이후로 사용됨
+* false를 반환하는 조건문 1: 수신 device (recipient, 여기선 AP)가 HT 표준을 지원하지 않는 경우 -> BlockAck 메커니즘은 802.11n(HT) 표준 이후로 사용됨
 * false를 반환하는 조건문 2: 이미 agreement가 존재하고, agreement의 상태가 reset이 아닌 경우 (originator와 recipent간의 blockack session이 유효한 경우)
 * 마지막 조건문에서 true가 반환되려면 아래 조건 3개 중 하나를 만족해야 함
   * 조건 1. 현재 할당된 TXOP의 BlockAck threshold가 0보다 크고, MAC queue에 있는 packet 개수가 threshold 보다 크거나 같은 경우
