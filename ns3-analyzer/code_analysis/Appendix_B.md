@@ -230,7 +230,7 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
   * mpdu list를 만드는 것 까지는 BE와 동일하지만, aggregation 되는 크기가 다르기 때문에, 서브루틴의 동작 과정에서 차이가 있을 거임
   * 따라서, GetNextAmpdu() 함수 동작 과정에 대한 분석이 필요함
  
-### 2.1. ns3::MpduAggregator::GetNextAmpdu (중요도 상)
+### 2.1. ns3::MpduAggregator::GetNextAmpdu (⭐ 중요도 상)
 ```c
 std::vector<Ptr<WifiMpdu>>
 MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
@@ -319,7 +319,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
   * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 답 찾을 수 있음 2.1.1 ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
  
-### 2.1.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (중요도 상)
+### 2.1.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (⭐ 중요도 상)
 ```c
 bool
 QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
