@@ -21,5 +21,5 @@
 * STA1 -> AP link1을 통해 전송한 wlan seq #174에 해당하는 A-mpdu 재전송 부분은 아래 그림과 같음
 
 <p align="center">  
-  <img src="https://github.com/user-attachments/assets/5de92ee4-c8ac-423c-8613-93b0605ef56d" width="40%">  
+  <img src="https://github.com/user-attachments/assets/1fa06074-5298-4574-906b-02da1bb0d7c2" width="40%">  
 </p>
