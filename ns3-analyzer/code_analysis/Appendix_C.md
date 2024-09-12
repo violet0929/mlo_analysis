@@ -50,8 +50,8 @@ n. Time: 1.088461 / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 80
   * 따라서, 해당 관점에서는 해석 1에 조금 더 가까운 것 같음
 
 * 관점에 따라 해석이 조금 다를 수 있으니 아무튼 코드 분석은 해야됨 (목적은 잡고 들어가자)
-  * 1. 우선, BA Req frame이 VI에 해당하는 TXOP를 획득하고 전송한 초기 프레임이 맞는지 확인해야 됨 (아닐수도 있으니..)
-  * 2. BA Req frame이 전송되면 왜 retranmission event가 invoke 되는지 확인해야 됨
+  * 목적 1. 우선, BA Req frame이 VI에 해당하는 TXOP를 획득하고 전송한 초기 프레임이 맞는지 확인해야 됨 (아닐수도 있으니..)
+  * 목적 2. BA Req frame이 전송되면 왜 retranmission event가 invoke 되는지 확인해야 됨
 
 * 자 그럼, breakpoint를 걸어야 되는데... 어디에 어떻게 걸 것인가가 관건임 (일반적인 mpdu가 아니기 때문에 header를 기반으로 하기 힘듬)
 
