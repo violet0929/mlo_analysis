@@ -129,13 +129,13 @@ HtFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& 
 * 서브루틴 1. GetWifiRemoteStationManager()->ReportDataFailed(*psdu->begin());
   * 2.1. 참고
 * 서브루틴 2. MissedBlockAck(psdu, txVector, resetCw);
-  * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직이 여기에 있음 (⭐ 제일 중요!!)
+  * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함 (⭐ 제일 중요!!)
   * 2.2. 참고
 * 서브루틴 3. Contention Window 재설정
-  * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정
+  * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
   * 2.3. 참고
 * 서브루틴 4. TransmissionFailed();
-  * A-mpdu 전송 실패에 따른 Channel State 관리하는 로직
+  * A-mpdu 전송 실패에 따른 Channel State 관리하는 로직을 포함
   * 2.4. 참고
 
 ### 2.1. ns3::WifiRemoteStationManager::ReportDataFailed (중요도 하)
