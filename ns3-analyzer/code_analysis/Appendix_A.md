@@ -1,4 +1,4 @@
-## Appendix. A. AC_BE retransmssion
+## Appendix. A. AC_BE Retransmssion
 
 ### Objective
 * AC_BE 및 AC_VI의 서로 다른 재전송 과정이 발생하는 원인을 찾기 위해
