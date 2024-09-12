@@ -3,8 +3,13 @@
 ### Objective
 * AC_BE 및 AC_VI의 서로 다른 재전송 과정이 발생하는 원인을 찾기 위해
 * 해당 문서에서는 ns-3.40 기반 AC_BE의 재전송 수행 과정을 분석함
+* No. 13 로그 분석
+```
+1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
+2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
+3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
+```
 
-### Preview
 * 전체 flow를 보기위해 최하위 계층 wifi-phy.cc의 Send()에서 breakpoint를 걸어야함
   * 아래 코드를 통해 wifi.phy.cc에서 ppdu->psdu->mpdu_list->mpdu 접근 가능
 ```c
@@ -14,20 +19,14 @@ for(int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 }
 ```
 
-* 여기서 mpdu header의 retry, wlan seq#, AC 확인은 
+* 여기서 mpdu header의 retry, wlan seq#, AC 확인은 아래 코드로 수행 가능
 ```c
 ptr[i]->GetHeader().IsRetry(); // 1: retry, 0: no retry
 ptr[i]->GetHeader().GetSequenceNumber(); // wlan seq #
 ptr[i]->GetHeader().GetQosTid(); // 3: AC_BE, 5: AC_VI
 ```
 
-* 따라서, No. 13 로그 분석을 위해 아래와 같은 코드를 작성하고 실행하면
-```
-1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
-2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
-3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
-```
-  
+* 따라서, debug를 위해 아래와 같은 코드를 작성하고 실행
 ```c
 auto ptr = ppdu->GetPsdu()->begin();
 for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
@@ -44,17 +43,17 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 > +1.09477s: No retry  
 > +1.11826s: retry
   
-* 시간 동기화가 안맞다. wifi-phy.cc에서 전송한 시간과 pcap에서 캡처된 시간이 다른 대신, 간격은 유사하다
+* 시간 동기화가 안맞다. wifi-phy.cc에서 전송한 시간과 pcap에서 캡처된 시간이 다른 대신, 간격은 유사하다 (즉, 같은 로그임. 아마도 ns-3에서 pcap 파일을 생성할 때 ns3::Time 값을 write 하는 위치가 다를거라고 예상)
   * ns-3 wifi-phy.cc: 1.11826s - 1.09477s = 23.49ms
   * wireshark: 1.074739s - 1.051254s = 23.485ms
   
-* 이제 wifi-phy.cc에 bp 걸고 함수 call stack을 보면
+* 이제 wifi-phy.cc에 breakpoint 걸고 call stack을 보면
 
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/71dd9b80-1c03-4f7e-a96e-8adb51d30208" width="40%">  
 </p>
 
-* 하나씩 순서대로 뜯자.
+* 하나씩 순서대로 뜯자. (서브루틴으로 들어가는 code의 line에 'STEP_INTO' 표시)
   
 ### 1. ns3::ChannelAccessManager::AccessTimeout (중요도 하)
 ```c
@@ -63,7 +62,7 @@ ChannelAccessManager::AccessTimeout()
 {
   NS_LOG_FUNCTION(this);
   UpdateBackoff();
-  DoGrantDcfAccess();
+  DoGrantDcfAccess(); // STEP_INTO
   DoRestartAccessTimeoutIfNeeded();
 }
 ```
@@ -130,7 +129,7 @@ ChannelAccessManager::DoGrantDcfAccess()
             auto width = (m_phy->GetOperatingChannel().IsOfdm() && m_phy->GetChannelWidth() > 20)
                              ? GetLargestIdlePrimaryChannel(interval, now)
                              : m_phy->GetChannelWidth();
-            if (m_feManager->StartTransmission(txop, width))
+            if (m_feManager->StartTransmission(txop, width)) // STEP_INTO
             {
                 for (auto& collidingTxop : internalCollisionTxops)
                 {
@@ -154,11 +153,11 @@ ChannelAccessManager::DoGrantDcfAccess()
 * 전송 시작 전, EDCA internal contention 먼저 필터링
 * 만약, 여러 AC에 해당하는 TXOP들이 동시에 backoff 만료 및 매체 접근이 필요할 때 상위 AC에 해당하는 TXOP 먼저 획득 (나머지는 내부 경쟁 패배)
 * 반대로 말하면, 하위 AC에 해당하는 TXOP를 얻으려면 상위 AC에 해당하는 TXOP의 backoff가 진행 중이거나 매체 접근 요청 상태가 아니어야함
-* 결론적으로, 내부 경쟁에서 승리한 EDCAF (즉, 특정 AC에 해당하는 txop)에 대한 전송을 시작함.
+* STEP_INTO
+  * 결론적으로, 내부 경쟁에서 승리한 EDCAF (즉, 특정 AC에 해당하는 txop)에 대한 전송을 시작함.
 * Note: 내부 경쟁에서 승리한 TXOP의 전송이 완료된 후 (성공하거나 실패하거나 어쨋든) 나머지 internal contention이 발생 TXOP에 대해 계산 (backoff 재계산 등) 수행
 * 구현 이슈인거 같음: 변경 사항을 획득한 txop의 전송 전에 적용하면 전역 변수 값 변경과 같은 문제 야기
   
-
 ### 3. ns3::EhtFrameExchangeManager::StartTransmission (중요도 하)
 ```c
 bool
@@ -166,7 +165,7 @@ EhtFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
 {
     NS_LOG_FUNCTION(this << edca << allowedWidth);
 
-    auto started = HeFrameExchangeManager::StartTransmission(edca, allowedWidth);
+    auto started = HeFrameExchangeManager::StartTransmission(edca, allowedWidth); // STEP_INTO
 
     if (started && m_staMac && m_staMac->IsEmlsrLink(m_linkId))
     {
@@ -206,15 +205,15 @@ QosFrameExchangeManager::StartTransmission(Ptr<Txop> edca, uint16_t allowedWidth
 
     m_allowedWidth = allowedWidth;
     auto qosTxop = StaticCast<QosTxop>(edca);
-    return StartTransmission(qosTxop, qosTxop->GetTxopLimit(m_linkId));
+    return StartTransmission(qosTxop, qosTxop->GetTxopLimit(m_linkId)); // STEP_INTO
 }
 ```
 * PCF: AP가 통신 관장, STA 들에게 데이터를 전송할 수 있는 기회 할당 (주로 EDCA, Real-time trafifc에서 사용하는 통신 방식)
 * PIFS: DCF 모드가 아닌 PCF 모드에서 주로 사용되며, DCF 보다는 짧고, SIFS 보다는 길다.
-* 언제 사용? PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
+* 주로 PCF 통신 모드가 끝난 후 STA 들에게 제어 프레임을 전송할 때 빠른 채널 복구를 위해 사용
 * 관련 없음. 패스
 
-### 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 최상 여기가 3할)
+### 5. ns3::QosFrameExchangeManager::StartTransmission (⭐ 중요도 상)
 ```c
 bool
 QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
@@ -292,7 +291,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
     // we get here if TXOP limit is null
     m_initialFrame = true;
 
-    if (StartFrameExchange(m_edca, Time::Min(), true))
+    if (StartFrameExchange(m_edca, Time::Min(), true)) // STEP_INTO
     {
         m_edca->NotifyChannelAccessed(m_linkId, Seconds(0));
         return true;
@@ -310,7 +309,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
   * 조건 1.2 남은 TXOP limit 값이 0이 아닌 경우 (즉, 획득한 TXOP에 대해 첫 번째 프레임을 전송하는 것이 아닌 경우)
     * StartFrameExchange(TXOP, 남은 시간)
     * 만약 전송 실패한 경우, 남은 TXOP의 시간이 프레임을 전송하기에 충분하지 않은 시간이므로, CF-End 프레임 전송)
-* 조건 2. 획득한 TXOP의 TXOP limit의 값이 null인 경우 (BE 및 BK에 해당)
+* 조건 2. 획득한 TXOP의 TXOP limit의 값이 null인 경우 (STEP_INTO, BE 및 BK에 해당)
   * StartFrameExchange(TXOP, 0)
 * 조건 3. 전송하지 않은 경우
   * return false
@@ -348,7 +347,7 @@ HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
 
     if (txFormat == MultiUserScheduler::SU_TX)
     {
-        return VhtFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
+        return VhtFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame); // STEP_INTO
     }
 
     if (txFormat == MultiUserScheduler::DL_MU_TX)
@@ -384,7 +383,7 @@ HeFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
 * 802.11ax에서 지원하는 Multi-User Transmission 관련 내용
 * SU_TX 사용함. 관련 없음. 패스.
 
-### 7. ns3::HtFrameExchangeManager::StartFrameExchange (⭐ 중요도 최상 여기가 3할)
+### 7. ns3::HtFrameExchangeManager::StartFrameExchange (⭐ 중요도 최상)
 ```c
 bool
 HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
@@ -434,7 +433,7 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
         !GetWifiRemoteStationManager()->NeedFragmentation(peekedItem =
                                                               CreateAliasIfNeeded(peekedItem)))
     {
-        return SendDataFrame(peekedItem, availableTime, initialFrame);
+        return SendDataFrame(peekedItem, availableTime, initialFrame); // STEP_INTO
     }
 
     // Use the QoS FEM to transmit the frame in all the other cases, i.e.:
@@ -453,7 +452,7 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
   * 이 경우 데이터가 전송되는 것이 아닌 ADDBA Request 프레임을 전송하며, 초기 STA 및 AP 간 BlockAck session 설정에 목적이 있음
   * ADDBA Request는 재전송을 수행하기 위한 BA Request와 다른 프레임임
   * ADDBA Request 프레임이 전송되는 조건은??? NeedSetupBlockAck function에서 true를 반환할 때 -> 7.1. ns3::HtFrameExchangeManager::NeedSetupBlockAck 확인
-* 조건 2.1. 일반적인 전송
+* 조건 2.1. 일반적인 전송 (STEP_INTO)
   * Alias는 별칭, 별명을 뜻하며 해당 함수는 그냥 copy를 생각하면 됨
 * 조건 2.2. 특정 조건에 부합한 전송 (해당되지 않음 나중에 심심하면 해야지)
   * 특정조건 1. Frame이 QoS data가 아닌 경우
@@ -506,7 +505,7 @@ HtFrameExchangeManager::NeedSetupBlockAck(Mac48Address recipient, uint8_t tid)
     * ns-3 RemoteStationManager: 동일 link에 association되어 있는 모든 device를 관리하는 클래스
 > Note: 각 조건 별 debug 수행했을때, 조건 3에 걸리고 나머지 조건에는 안걸림 (초기 agreement가 establishment 이후 true를 반환하는 경우가 없었음. 즉, false를 반환하는 조건문에 안 걸린 경우가 없음)
  
-### 8. ns3::HtFrameExchangeManager::SendDataFrame (⭐ 중요도 최상 여기가 3할)
+### 8. ns3::HtFrameExchangeManager::SendDataFrame (⭐ 중요도 최상)
 ```c
 bool
 HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
@@ -528,7 +527,7 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
     txParams.m_txVector =
         GetWifiRemoteStationManager()->GetDataTxVector(peekedItem->GetHeader(), m_allowedWidth);
     Ptr<WifiMpdu> mpdu =
-        edca->GetNextMpdu(m_linkId, peekedItem, txParams, availableTime, initialFrame);
+        edca->GetNextMpdu(m_linkId, peekedItem, txParams, availableTime, initialFrame); // 여기 중요!!
 
     if (!mpdu)
     {
@@ -538,13 +537,13 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
 
     // try A-MPDU aggregation
     std::vector<Ptr<WifiMpdu>> mpduList =
-        m_mpduAggregator->GetNextAmpdu(mpdu, txParams, availableTime);
+        m_mpduAggregator->GetNextAmpdu(mpdu, txParams, availableTime); // 여기 중요!!
     NS_ASSERT(txParams.m_acknowledgment);
 
     if (mpduList.size() > 1)
     {
         // A-MPDU aggregation succeeded
-        SendPsduWithProtection(Create<WifiPsdu>(std::move(mpduList)), txParams);
+        SendPsduWithProtection(Create<WifiPsdu>(std::move(mpduList)), txParams); // STEP_INTO
     }
     else if (txParams.m_acknowledgment->method == WifiAcknowledgment::BAR_BLOCK_ACK)
     {
@@ -710,7 +709,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
                 /* 추가 */
 
                 nextMpdu =
-                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
+                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false); // 여기 중요!!
             }
         }
         if (mpduList.size() == 1)
@@ -727,14 +726,15 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   * 조건 1. 현재 검색된 mpdu의 seq#가 현재 시점의 수신 device의 수신 윈도우 크기에 포함되어야 함
     * winstart: 송신기 입장에서, 현재 수신기가 기대하고 있는 seq # (즉, 송신기 입장에서는 in-flight 상태일 수도 있음)
     * winsize: 수신기의 최대 buffer 크기
-  ```c
-  bool
-  IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
-  {
-    return ((seq - winstart + 4096) % 4096) < winsize;
-  }
-  ```
   * 조건 2. nextMpdu가 nullptr이 되기 전까지
+```c
+bool
+IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
+{
+  return ((seq - winstart + 4096) % 4096) < winsize;
+}
+```
+  
 * 근데, 조건 1에는 안걸림 (debug 해보면, 현재 시점의 수신 device의 winstart = 117, winsize = 256이므로 이렇게 따지면 #234 ~ #372까지 aggregation 되야함)
 * 조건 2에 걸림 그럼 왜 #234 ~ #272까지 aggregation 되는지 확인해야함 (즉, #273은 왜 안되는지)
 * 따라서, 추가적인 코드를 통해 BP 걸어주고 서브루틴 진입
@@ -743,7 +743,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   * ns3::QosTxop::GetNextMpdu
   * ns3::QosFrameExchangeManager::TryAddMpdu
   * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
-  * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 여기서 답 찾을 수 있음 8.2.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
+  * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 여기서 답 찾을 수 있음 (8.2.1. 참고)
  
 ### 8.2.1 ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (동작 분석)
 ```c
@@ -773,8 +773,8 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
     Time txTime = GetTxDuration(ppduPayloadSize, receiver, txParams);
     NS_LOG_DEBUG("PPDU duration: " << txTime.As(Time::MS));
 
-    if ((ppduDurationLimit.IsStrictlyPositive() && txTime > ppduDurationLimit) ||
-        (maxPpduDuration.IsStrictlyPositive() && txTime > maxPpduDuration))
+    if ((ppduDurationLimit.IsStrictlyPositive() && txTime > ppduDurationLimit) ||  
+        (maxPpduDuration.IsStrictlyPositive() && txTime > maxPpduDuration)) // 여기 중요!!
     {
         NS_LOG_DEBUG(
             "the frame does not meet the constraint on max PPDU duration or PPDU duration limit");
@@ -791,4 +791,7 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
 * 해석하면, 사전에 설정된 PHY 파라미터를 기준으로 Preamble (헤더)정보를 생성하는데, 해당 기준을 초과하여 데이터를 전송할 수가 없다는 뜻임
   
 ### Summary  
-  * AC_BE에 대한 분석은 끝났고 이제 AC_VI 차례 Appendix B 참고
+  * 이후 실행되는 서브루틴 ~ wifi-phy 까지는 psdu 및 ppdu 생성, preamble 추가 등과 같은 작업 수행 (중요도가 낮음)
+  * BE retransmission 과정은 txParams(송신 device의 MAC 및 PHY 속성 값)을 기반으로 계산된 최대 PPDU 전송 시간에 제약을 받음
+  * 첫 번째 의문점: 원본 프레임의 전체가 재전송되는 BE와 다르게, 부분적으로 재전송되는 VI retransmission의 과정 -> Appendix B. VI retansmission 참고
+  * 두 번째 의문점: Retransmission event가 invoke 되는 원인 -> Appendix C. Block ACK request 참고
