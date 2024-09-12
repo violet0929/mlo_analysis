@@ -137,7 +137,7 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
         // We are continuing a TXOP, check if we can transmit another frame
         NS_ASSERT(!m_initialFrame);
 
-        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // BREAKPOINT
+        if (!StartFrameExchange(m_edca, m_edca->GetRemainingTxop(m_linkId), false)) // STEP_INTO
         {
             NS_LOG_DEBUG("Not enough remaining TXOP time");
             return SendCfEndIfNeeded();
@@ -166,12 +166,12 @@ QosFrameExchangeManager::StartTransmission(Ptr<QosTxop> edca, Time txopDuration)
     * 조건 1.1 특정 link의 TXOP가 obtain되지 않은 경우 (즉, initial frame 전송에 해당)
     * 조건 1.2 특정 link의 TXOP limit 값이 남아 있는 경우 (즉, 전송되는 frame은 initial frame이 아님)
   * 조건 2. TXOP limit의 값이 null일 때 (AC_BE 및 AC_BK에 해당)
-* BREAKPOINT
+* STEP_INTO
   * 조건 1.2.에 해당함
   * Available Time인 m_edca->GetRemainingTxop(m_linkId)의 값을 보면 3962400ns임 (즉, 3.962ms)가 남아 있음
   * VI TXOP Limit = 4.096ms임을 감안했을 때 아직 획득한 TXOP에서 frame을 전송하기에는 충분한 시간임 (반대로 말하면, 전송한 initial frame의 크기가 작음)
 
-### 2. ns3::HtFrameExchangeManager::SendDataFrame (중요도 상)
+### 2. ns3::HtFrameExchangeManager::SendDataFrame (⭐ 중요도 상)
 ```c
 bool
 HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
@@ -192,7 +192,7 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
     txParams.m_txVector =
         GetWifiRemoteStationManager()->GetDataTxVector(peekedItem->GetHeader(), m_allowedWidth);
     Ptr<WifiMpdu> mpdu =
-        edca->GetNextMpdu(m_linkId, peekedItem, txParams, availableTime, initialFrame);
+        edca->GetNextMpdu(m_linkId, peekedItem, txParams, availableTime, initialFrame); // 여기 중요!!
 
     if (!mpdu)
     {
@@ -202,13 +202,13 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
 
     // try A-MPDU aggregation
     std::vector<Ptr<WifiMpdu>> mpduList =
-        m_mpduAggregator->GetNextAmpdu(mpdu, txParams, availableTime);
+        m_mpduAggregator->GetNextAmpdu(mpdu, txParams, availableTime); // 여기 중요!!
     NS_ASSERT(txParams.m_acknowledgment);
 
     if (mpduList.size() > 1)
     {
         // A-MPDU aggregation succeeded
-        SendPsduWithProtection(Create<WifiPsdu>(std::move(mpduList)), txParams); // BREAKPOINT
+        SendPsduWithProtection(Create<WifiPsdu>(std::move(mpduList)), txParams); // STEP_INTO
     }
     else if (txParams.m_acknowledgment->method == WifiAcknowledgment::BAR_BLOCK_ACK)
     {
@@ -226,7 +226,7 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
 }
 ```
 * Aggregation 되는 부분까지 와서 추가 코드 기반으로 다시 breakpoint 걸어줌
-* BREAKPOINT
+* STEP_INTO
   * mpdu list를 만드는 것 까지는 BE와 동일하지만, aggregation 되는 크기가 다르기 때문에, 서브루틴의 동작 과정에서 차이가 있을 거임
   * 따라서, GetNextAmpdu() 함수 동작 과정에 대한 분석이 필요함
  
@@ -291,7 +291,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
                 }
                 /* 추가 */
                 nextMpdu =
-                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false);
+                    qosTxop->GetNextMpdu(m_linkId, peekedMpdu, txParams, availableTime, false); // 여기 중요!!
 
             }
         }
@@ -347,8 +347,8 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
     Time txTime = GetTxDuration(ppduPayloadSize, receiver, txParams);
     NS_LOG_DEBUG("PPDU duration: " << txTime.As(Time::MS));
 
-    if ((ppduDurationLimit.IsStrictlyPositive() && txTime > ppduDurationLimit) ||
-        (maxPpduDuration.IsStrictlyPositive() && txTime > maxPpduDuration))
+    if ((ppduDurationLimit.IsStrictlyPositive() && txTime > ppduDurationLimit) || 
+        (maxPpduDuration.IsStrictlyPositive() && txTime > maxPpduDuration)) // 여기 중요!!
     {
         NS_LOG_DEBUG(
             "the frame does not meet the constraint on max PPDU duration or PPDU duration limit");
@@ -371,7 +371,7 @@ QosFrameExchangeManager::IsWithinSizeAndTimeLimits(uint32_t ppduPayloadSize,
   * 왜냐하면, initial frame으로 1500byte 크기의 프레임을 보냈으면 availableTime이 3.906ms보다 무조건 작았을 수 밖에 없음
  
 ### Summary
-* VI retransmission 과정에서 손실된 원본 프레임의 전체가 아닌 부분적으로 재전송이 수행되는 이유는 TXOP를 획득하고 초기 프레임으로 '무엇'을 전송했기 때문
+* VI retransmission 과정에서 손실된 원본 프레임의 전체가 아닌 부분적으로 재전송이 수행되는 이유는 TXOP를 획득하고 초기 프레임으로 '무엇'을 전송했기 때문임
 * TXOP limit의 시간에서 초기 프레임의 전송 시간 만큼 차감이 되었으며, 해당 시간을 기준으로 aggregation을 수행하였기 때문에 마지막 패킷이 aggregation되지 못함
 * BE retransmission과 함수 호출 과정은 거의 유사하나 걸리는 조건이 달랐음
 * 그럼 도대체 initial frame으로 날아간 frame은 무엇일까? Appendix C. 참고
