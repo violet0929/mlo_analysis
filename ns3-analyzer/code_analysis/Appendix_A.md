@@ -43,7 +43,8 @@ for (int i = 0; i < (int)ppdu->GetPsdu()->GetNMpdus(); i++){
 > +1.09477s: No retry  
 > +1.11826s: retry
   
-* 시간 동기화가 안맞다. wifi-phy.cc에서 전송한 시간과 pcap에서 캡처된 시간이 다른 대신, 간격은 유사하다 (즉, 같은 로그임. 아마도 ns-3에서 pcap 파일을 생성할 때 ns3::Time 값을 write 하는 위치가 다를거라고 예상)
+* 시간 동기화가 안맞다. wifi-phy.cc에서 전송한 시간과 pcap에서 캡처된 시간이 다른 대신, 간격은 유사하다 (즉, 같은 로그임)
+   * 아마도 ns-3에서 pcap 파일을 생성할 때 ns3::Time 값을 write 하는 위치가 다를거라고 예상)
   * ns-3 wifi-phy.cc: 1.11826s - 1.09477s = 23.49ms
   * wireshark: 1.074739s - 1.051254s = 23.485ms
   
