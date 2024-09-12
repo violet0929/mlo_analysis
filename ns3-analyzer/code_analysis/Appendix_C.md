@@ -54,3 +54,110 @@ n. Time: 1.088461s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 8
   * 목적 2. BA Req frame이 전송되면 왜 retranmission event가 invoke 되는지 확인해야 됨
 
 * 자 그럼, breakpoint를 걸어야 되는데... 어디에 어떻게 걸 것인가가 관건임 (일반적인 mpdu가 아니기 때문에 header를 기반으로 하기 힘듬)
+* 전체 flow를 보기 위해 최하위 계층에 wifi-phy.cc에 걸어보려고 시도 (뭐, psdu size를 100이하 설정하는 등...)
+  * 근데, BA Req frame이 전송되는 건 ns3::WifiPhy::Send 함수를 통해서 전송 되는게 아닌거 같음
+  * 그래서 그냥 노가다 하기로 했음 (머리가 나쁘면 노가다를 해야지.. 그래도 근거가 있는 노가다..)
+  * 여태까지 나온 MAC 계층 클래스 중에서 blockack과 관련된 모든 function 다 찾음
+* 코드 분석 시작!
+ 
+### 1. ns3::HeFrameExchangeManager::BlockAckTimeout (중요도 중, 찾느라고 진짜 애먹음)
+```c
+void
+HeFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& txVector)
+{
+    NS_LOG_FUNCTION(this << *psdu << txVector);
+
+    /* 추가 */
+    auto ptr = psdu->begin();
+    for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
+        auto mpdu_header = ptr[i]->GetHeader();
+        if (mpdu_header.GetSequenceNumber() == 174 && mpdu_header.GetQosTid() == 5) {
+            NS_LOG_UNCOND(Simulator::Now().As(Time::S) << ": Wlsn Seq# 174, Qos Tid 5 mpdu's BlockAck Timeout");
+        }
+    }
+    /* 추가 */
+
+    VhtFrameExchangeManager::BlockAckTimeout(psdu, txVector); // STEP INTO
+
+    // If a Block Ack is missed in response to a DL MU PPDU requiring acknowledgment
+    // in SU format, we have to set the Retry flag for all transmitted MPDUs that have
+    // not been acknowledged nor discarded and clear m_psduMap since the transmission failed.
+    for (auto& psdu : m_psduMap)
+    {
+        for (auto& mpdu : *PeekPointer(psdu.second))
+        {
+            if (mpdu->IsQueued())
+            {
+                mpdu->GetHeader().SetRetry();
+            }
+        }
+    }
+    m_psduMap.clear();
+}
+```
+* Function 이름 보면 유추할 수 있듯이 전송했던 psdu에 대해 기대한 BA가 안오면 (즉, timeout이 발생하면) event가 invoke 되는 형식임
+* 우리는 wlan seq #174를 가지는 mpdu의 BA 프레임 전송 로그가 필요하므로, 추가 코드를 기반으로 breakpoint 걸어줌
+* 이후, VhtFrameExchangeManager::BlockAckTimeout(psdu, txVector) << 여기로 STEP INTO
+  
+### 2. HtFrameExchangeManager::BlockAckTimeout (중요도 중, 서브루틴이 많음)
+```c
+void
+HtFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& txVector)
+{
+    NS_LOG_FUNCTION(this << *psdu << txVector);
+
+    GetWifiRemoteStationManager()->ReportDataFailed(*psdu->begin());
+
+    bool resetCw;
+    MissedBlockAck(psdu, txVector, resetCw);
+
+    NS_ASSERT(m_edca);
+
+    if (resetCw)
+    {
+        m_edca->ResetCw(m_linkId);
+    }
+    else
+    {
+        m_edca->UpdateFailedCw(m_linkId);
+    }
+
+    m_psdu = nullptr;
+    TransmissionFailed();
+}
+```
+* 서브루틴 1. GetWifiRemoteStationManager()->ReportDataFailed(*psdu->begin());
+  * 2.1. 참고
+* 서브루틴 2. MissedBlockAck(psdu, txVector, resetCw);
+  * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직이 여기에 있음 (⭐ 제일 중요!!)
+  * 2.2. 참고
+* 서브루틴 3. Contention Window 재설정
+  * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정
+  * 2.3. 참고
+* 서브루틴 4. TransmissionFailed();
+  * A-mpdu 전송 실패에 따른 Channel State 관리하는 로직
+  * 2.4. 참고
+
+### 2.1. ns3::WifiRemoteStationManager::ReportDataFailed (중요도 하)
+```c
+void
+WifiRemoteStationManager::ReportDataFailed(Ptr<const WifiMpdu> mpdu)
+{
+    NS_LOG_FUNCTION(this << *mpdu);
+    NS_ASSERT(!mpdu->GetHeader().GetAddr1().IsGroup());
+    AcIndex ac =
+        QosUtilsMapTidToAc((mpdu->GetHeader().IsQosData()) ? mpdu->GetHeader().GetQosTid() : 0);
+    bool longMpdu = (mpdu->GetSize() > m_rtsCtsThreshold);
+    if (longMpdu)
+    {
+        m_slrc[ac]++;
+    }
+    else
+    {
+        m_ssrc[ac]++;
+    }
+    m_macTxDataFailed(mpdu->GetHeader().GetAddr1());
+    DoReportDataFailed(Lookup(mpdu->GetHeader().GetAddr1()));
+}
+```
+* 
