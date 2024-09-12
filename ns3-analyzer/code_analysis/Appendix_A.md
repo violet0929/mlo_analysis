@@ -3,6 +3,8 @@
 ### Objective
 * AC_BE 및 AC_VI의 서로 다른 재전송 과정이 발생하는 원인을 찾기 위해
 * 해당 문서에서는 ns-3.40 기반 AC_BE의 재전송 수행 과정을 분석함
+
+### Preview
 * No. 13 로그 분석
 ```
 1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
