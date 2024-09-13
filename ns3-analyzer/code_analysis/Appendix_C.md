@@ -56,8 +56,7 @@ n. Time: 1.088461s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 8
 * 자 그럼, breakpoint를 걸어야 되는데... 어디에 어떻게 걸 것인가가 관건임 (일반적인 mpdu가 아니기 때문에 header를 기반으로 하기 힘듬)
 * 전체 flow를 보기 위해 최하위 계층에 wifi-phy.cc에 걸어보려고 시도 (뭐, psdu size를 100이하 설정하는 등...)
   * 근데, BA Req frame이 전송되는 건 ns3::WifiPhy::Send 함수를 통해서 전송 되는게 아닌거 같음
-  * 그래서 그냥 노가다 하기로 했음 (머리가 나쁘면 노가다를 해야지.. 그래도 근거가 있는 노가다..)
-  * 여태까지 나온 MAC 계층 클래스 중에서 blockack과 관련된 모든 function 다 찾음
+  * 그래서 여태까지 나온 MAC 계층 클래스 중에서 blockack과 관련된 모든 function 다 찾아보기로 함 
 * 코드 분석 시작!
  
 ### 1. ns3::HeFrameExchangeManager::BlockAckTimeout (중요도 중, 찾느라고 진짜 애먹음)
