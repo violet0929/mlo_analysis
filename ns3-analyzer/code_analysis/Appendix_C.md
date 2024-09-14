@@ -266,12 +266,18 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
   * 예시 2: STA1->AP A-mpdu, AP->STA1 BA (여기서 BA Req는 implicit에 해당함, explicitly하게 BA Req를 보내지 않고도 BA를 수신 받음)
   * 예시 1이 예시 2보다 신뢰성이 더 높음 (여기서 신뢰성이 높다는 관점은 수신자 입장에서 송신자의 A-mpdu는 수신 받지 못하고 BA Req를 수신 받았으면, 빠른 대처가 가능함. 왜냐하면 timeout event의 invoke로 인한 BA Req frame이 아니기 때문)
   * 예시 2가 예시 1보다 overhead가 작음 (explicitly하게 보내는 BA Req - BA를 통해 channel을 occupy하기 때문에)
+    * 따라서, 일반적으로 implicit Block Ack Req mechanism을 사용함
   * 결론적으로, 송신기의 BA Req frame 전송 여부로 Block Ack mechanism을 분류할 수 있음 (그럼 재전송은? 당연히 Explicit Block Ack임)
   
-* 이제 코드를 보면, 여기 case 분류가 굉장히 까다로움...
+* 이제 코드를 보면, Case 분류하기 전에 두가지 변수에 대해 값을 할당함
+  * 변수1 (tid): 전송했던 psdu에 해당하는 tid 값을 가져오고, 해당 값을 기반으로 QosTxop object에 접근 (MAC Queue handling을 위해)
+  * 변수2 (isBar): 전송했던 psdu가 이미 BA Req frame인 경우 True 할당, 해당 값을 기반으로 Case 분류를 수행함
 * Case Study
-  * Case 1. 
-  * Case 2. 
+  * Case 1. 전송했던 psdu가 이미 BA Req frame이며, BA Req frame의 전송이 필요한 경우: psdu의 Retry header=1, resetCw=False
+  * Case 2. Explicit BA Request mechanism을 사용하고, BA Req frame의 전송이 필요한 경우, 경우: BA Req frame 생성 및 schedule, resetCw=False, 2.2.1. 참고
+  * Case 3. 전송했던 psdu가 이미 BA Req frame이지만, BA Req frame의 전송이 필요하지 않은 경우: Dequeue, resetCw=True
+  * Case 4. Implicit BA Request mechanism을 사용하는 경우
+
 
 ### 2.3.1. ns3::Txop::ResetCw (중요도 중)
 ```c
