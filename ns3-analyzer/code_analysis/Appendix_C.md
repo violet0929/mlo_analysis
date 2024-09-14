@@ -128,7 +128,6 @@ HtFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& 
 * 서브루틴 1. GetWifiRemoteStationManager()->ReportDataFailed(*psdu->begin());
   * 2.1. 참고
 * 서브루틴 2. MissedBlockAck(psdu, txVector, resetCw);
-  * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함 (⭐ 제일 중요!!)
   * 2.2. 참고
 * 서브루틴 3. Contention Window 재설정
   * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
@@ -159,4 +158,102 @@ WifiRemoteStationManager::ReportDataFailed(Ptr<const WifiMpdu> mpdu)
     DoReportDataFailed(Lookup(mpdu->GetHeader().GetAddr1()));
 }
 ```
-* 
+* RemoteStationManager 동일 link에 association되어 있는 모든 device를 관리하는 클래스
+* m_macTxDataFailed -> ns-3 Trace source, 별도 동작 없음
+* DoReportDataFailed: C++ virtual method, 손실된 mpdu를 포함하고 있는 주소와 association 되어 있는 device (즉, STA1)를 인자 값으로 전달, 별도 동작 없음 (나중에 집가서 까먹지 말고 해봐야 됨)
+
+### 2.2. HtFrameExchangeManager::MissedBlockAck
+```c
+void
+HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
+                                       const WifiTxVector& txVector,
+                                       bool& resetCw)
+{
+    NS_LOG_FUNCTION(this << psdu << txVector << resetCw);
+ 
+    auto recipient = psdu->GetAddr1();
+    auto recipientMld = GetWifiRemoteStationManager()->GetMldAddress(recipient).value_or(recipient);
+    bool isBar;
+    uint8_t tid;
+ 
+    if (psdu->GetNMpdus() == 1 && psdu->GetHeader(0).IsBlockAckReq())
+    {
+        isBar = true;
+        CtrlBAckRequestHeader baReqHdr;
+        psdu->GetPayload(0)->PeekHeader(baReqHdr);
+        tid = baReqHdr.GetTidInfo();
+    }
+    else
+    {
+        isBar = false;
+        GetWifiRemoteStationManager()
+            ->ReportAmpduTxStatus(recipient, 0, psdu->GetNMpdus(), 0, 0, txVector);
+        std::set<uint8_t> tids = psdu->GetTids();
+        NS_ABORT_MSG_IF(tids.size() > 1, "Multi-TID A-MPDUs not handled here");
+        NS_ASSERT(!tids.empty());
+        tid = *tids.begin();
+    }
+ 
+    Ptr<QosTxop> edca = m_mac->GetQosTxop(tid);
+ 
+    if (edca->UseExplicitBarAfterMissedBlockAck() || isBar)
+    {
+        // we have to send a BlockAckReq, if needed
+        if (GetBaManager(tid)->NeedBarRetransmission(tid, recipientMld))
+        {
+            NS_LOG_DEBUG("Missed Block Ack, transmit a BlockAckReq");
+            if (isBar)
+            {
+                psdu->GetHeader(0).SetRetry();
+            }
+            else
+            {
+                // missed block ack after data frame with Implicit BAR Ack policy
+                auto [reqHdr, hdr] = edca->PrepareBlockAckRequest(recipient, tid);
+                GetBaManager(tid)->ScheduleBar(reqHdr, hdr);
+            }
+            resetCw = false;
+        }
+        else
+        {
+            NS_LOG_DEBUG("Missed Block Ack, do not transmit a BlockAckReq");
+            // if a BA agreement exists, we can get here if there is no outstanding
+            // MPDU whose lifetime has not expired yet.
+            GetWifiRemoteStationManager()->ReportFinalDataFailed(*psdu->begin());
+            if (isBar)
+            {
+                DequeuePsdu(psdu);
+            }
+            if (m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid))
+            {
+                // schedule a BlockAckRequest to be sent only if there are data frames queued
+                // for this recipient
+                GetBaManager(tid)->AddToSendBarIfDataQueuedList(recipientMld, tid);
+            }
+            resetCw = true;
+        }
+    }
+    else
+    {
+        // we have to retransmit the data frames, if needed
+        if (!GetWifiRemoteStationManager()->NeedRetransmission(*psdu->begin()))
+        {
+            NS_LOG_DEBUG("Missed Block Ack, do not retransmit the data frames");
+            GetWifiRemoteStationManager()->ReportFinalDataFailed(*psdu->begin());
+            for (const auto& mpdu : *PeekPointer(psdu))
+            {
+                NotifyPacketDiscarded(mpdu);
+                DequeueMpdu(mpdu);
+            }
+            resetCw = true;
+        }
+        else
+        {
+            NS_LOG_DEBUG("Missed Block Ack, retransmit data frames");
+            GetBaManager(tid)->NotifyMissedBlockAck(m_linkId, recipientMld, tid);
+            resetCw = false;
+        }
+    }
+}
+```
+* 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함 (⭐ 제일 중요!!)
