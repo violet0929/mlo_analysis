@@ -255,17 +255,23 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
 }
 ```
 * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함
-* Supplementary: Implicit BlockAck vs Explicit BlockAck 
-  * Implicit BlockAck: Instead of receiving an acknowledgment for each frame, the receiver sends a single Block Ack frame that acknowledges the receipt of multiple frames. (i.e., low complexity, more efficient in environments with low to moderate traffic)
-  * Explicit BlockAck: The receiver responds with a Block Ack (BA) frame, indicating which frames in the specified range were successfully received and which were not. (i.e., high complexity, more efficient in environments with high-density traffic)
+* Supplementary: Implicit BlockAckReq vs Explicit BlockAckReq
+  * BlockAckReq: how the acknowledgment process is initiated and handled during data transmission in wireless communication
+  * Implicit BlockAckReq: the sender assumes that the receiver will automatically acknowledge the reception of data blocks without needing an explicit request to trigger the acknowledgment process
+  * Explicit BlockAckReq: the sender explicitly requests a block acknowledgment from the receiver after transmitting a series of data frames
 
-* The sender explicitly requests acknowledgment for a specific range of frames using a Block Ack Request (BAR) frame.
-* 정확하게 말하면, BA req 프레임을 명시적으로 보냈는지 확인을 해야됨
-* 
-
+* BA Req 프레임의 목적에 대해 생각을 해보면 이해하기 쉬움 (손실의 관점에서 생각하면 어려움)
+  * 목적: 송신기에서 전송한 A-mpdu에 포함된 각 mpdu 들에 대해 ack 응답을 받기 위함
+  * 예시 1: STA1->AP A-mpdu, STA1->AP BA Req, AP->STA1 BA (여기서 BA Req는 explicit에 해당함)
+  * 예시 2: STA1->AP A-mpdu, AP->STA1 BA (여기서 BA Req는 implicit에 해당함, explicitly하게 BA Req를 보내지 않고도 BA를 수신 받음)
+  * 예시 1이 예시 2보다 신뢰성이 더 높음 (여기서 신뢰성이 높다는 관점은 수신자 입장에서 송신자의 A-mpdu는 수신 받지 못하고 BA Req를 수신 받았으면, 빠른 대처가 가능함. 왜냐하면 timeout event의 invoke로 인한 BA Req frame이 아니기 때문)
+  * 예시 2가 예시 1보다 overhead가 작음 (explicitly하게 보내는 BA Req - BA를 통해 channel을 occupy하기 때문에)
+  * 결론적으로, 송신기의 BA Req frame 전송 여부로 Block Ack mechanism을 분류할 수 있음 (그럼 재전송은? 당연히 Explicit Block Ack임)
+  
+* 이제 코드를 보면, 여기 case 분류가 굉장히 까다로움...
 * Case Study
-  * Case 1. BA Request 프레임이 손실된 경우 (즉, mpdu 및 A-mpdu의 BA Timeout event가 invoke된 후, BA Req 프레임을 전송했지만 해당 프레임이 손실)
-  * Case 2. mpdu 및 A-mpdu 프레임이 손실된 경우 (즉, 손실된 프레임을 recovery하기 위해 BA Req 프레임을 전송해야 함)
+  * Case 1. 
+  * Case 2. 
 
 ### 2.3.1. ns3::Txop::ResetCw (중요도 중)
 ```c
