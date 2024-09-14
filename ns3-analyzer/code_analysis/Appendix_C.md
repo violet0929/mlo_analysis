@@ -255,7 +255,11 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
 }
 ```
 * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함
-* 여기 Case 분류가 굉장히 까다로움
+* Supplementary: Implicit BlockAck vs Explicit BlockAck 
+  * Implicit BlockAck: Instead of receiving an acknowledgment for each frame, the receiver sends a single Block Ack frame that acknowledges the receipt of multiple frames. (i.e., low complexity, more efficient in environments with low to moderate traffic)
+  * Explicit BlockAck: The receiver responds with a Block Ack (BA) frame, indicating which frames in the specified range were successfully received and which were not. (i.e., high complexity, more efficient in environments with high-density traffic)
+
+* Case Study
   * Case 1. BA Request 프레임이 손실된 경우 (즉, mpdu 및 A-mpdu의 BA Timeout event가 invoke된 후, BA Req 프레임을 전송했지만 해당 프레임이 손실)
   * Case 2. mpdu 및 A-mpdu 프레임이 손실된 경우 (즉, 손실된 프레임을 recovery하기 위해 BA Req 프레임을 전송해야 함)
 
