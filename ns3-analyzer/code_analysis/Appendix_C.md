@@ -94,11 +94,11 @@ HeFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& 
     m_psduMap.clear();
 }
 ```
-* Function 이름 보면 유추할 수 있듯이 전송했던 psdu에 대해 기대한 BA가 안오면 (즉, timeout이 발생하면) event가 invoke 되는 형식임
+* 전송했던 psdu에 대해 기대한 BA가 수신되지 않으면 (즉, timeout이 발생하면) event가 invoke 되는 형식임
 * 우리는 wlan seq #174를 가지는 mpdu의 BA 프레임 전송 로그가 필요하므로, 추가 코드를 기반으로 breakpoint 걸어줌
 * 이후, VhtFrameExchangeManager::BlockAckTimeout(psdu, txVector) << 여기로 STEP INTO
   
-### 2. HtFrameExchangeManager::BlockAckTimeout (중요도 중, 서브루틴이 많음)
+### 2. ns3::HtFrameExchangeManager::BlockAckTimeout (중요도 중, 서브루틴이 많음)
 ```c
 void
 HtFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& txVector)
@@ -131,7 +131,7 @@ HtFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& 
   * 2.2. 참고
 * 서브루틴 3. Contention Window 재설정
   * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
-  * 2.3. 참고
+  * 2.3.1. 및 2.3.2. 참고
 * 서브루틴 4. TransmissionFailed();
   * A-mpdu 전송 실패에 따른 Channel State 관리하는 로직을 포함
   * 2.4. 참고
@@ -162,7 +162,7 @@ WifiRemoteStationManager::ReportDataFailed(Ptr<const WifiMpdu> mpdu)
 * m_macTxDataFailed -> ns-3 Trace source, 별도 동작 없음
 * DoReportDataFailed: C++ virtual method, 손실된 mpdu를 포함하고 있는 주소와 association 되어 있는 device (즉, STA1)를 인자 값으로 전달, 별도 동작 없음 (나중에 집가서 까먹지 말고 해봐야 됨)
 
-### 2.2. HtFrameExchangeManager::MissedBlockAck
+### 2.2. ns3::HtFrameExchangeManager::MissedBlockAck (⭐ 중요도 최상)
 ```c
 void
 HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
@@ -256,4 +256,86 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
     }
 }
 ```
-* 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함 (⭐ 제일 중요!!)
+* 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함
+
+
+### 2.3.1. ns3::Txop::ResetCw (중요도 중)
+```c
+void
+Txop::ResetCw(uint8_t linkId)
+{
+    NS_LOG_FUNCTION(this);
+    auto& link = GetLink(linkId);
+    link.cw = GetMinCw(linkId);
+    m_cwTrace(link.cw, linkId);
+}
+```
+
+### 2.3.2. ns3::Txop::UpdateFailedCw (중요도 중)
+```c
+void
+Txop::UpdateFailedCw(uint8_t linkId)
+{
+    NS_LOG_FUNCTION(this);
+    auto& link = GetLink(linkId);
+    // see 802.11-2012, section 9.19.2.5
+    link.cw = std::min(2 * (link.cw + 1) - 1, GetMaxCw(linkId));
+    // if the MU EDCA timer is running, CW cannot be less than MU CW min
+    link.cw = std::max(link.cw, GetMinCw(linkId));
+    m_cwTrace(link.cw, linkId);
+}
+```
+
+### 2.4. ns3::QosFrameExchangeManager::TransmissionFailed (중요도 상)
+```c
+void
+QosFrameExchangeManager::TransmissionFailed()
+{
+    NS_LOG_FUNCTION(this);
+ 
+    // TODO This will be removed once no Txop is installed on a QoS station
+    if (!m_edca)
+    {
+        FrameExchangeManager::TransmissionFailed();
+        return;
+    }
+ 
+    if (m_initialFrame)
+    {
+        // The backoff procedure shall be invoked by an EDCAF when the transmission
+        // of an MPDU in the initial PPDU of a TXOP fails (Sec. 10.22.2.2 of 802.11-2016)
+        NS_LOG_DEBUG("TX of the initial frame of a TXOP failed: terminate TXOP");
+        NotifyChannelReleased(m_edca);
+        m_edca = nullptr;
+    }
+    else
+    {
+        NS_ASSERT_MSG(m_edca->GetTxopLimit(m_linkId).IsStrictlyPositive(),
+                      "Cannot transmit more than one frame if TXOP Limit is zero");
+ 
+        // A STA can perform a PIFS recovery or perform a backoff as a response to
+        // transmission failure within a TXOP. How it chooses between these two is
+        // implementation dependent. (Sec. 10.22.2.2 of 802.11-2016)
+        if (m_pifsRecovery)
+        {
+            // we can continue the TXOP if the carrier sense mechanism indicates that
+            // the medium is idle in a PIFS
+            NS_LOG_DEBUG("TX of a non-initial frame of a TXOP failed: perform PIFS recovery");
+            NS_ASSERT(!m_pifsRecoveryEvent.IsRunning());
+            m_pifsRecoveryEvent =
+                Simulator::Schedule(m_phy->GetPifs(), &QosFrameExchangeManager::PifsRecovery, this);
+        }
+        else
+        {
+            // In order not to terminate (yet) the TXOP, we call the NotifyChannelReleased
+            // method of the Txop class, which only generates a new backoff value and
+            // requests channel access if needed,
+            NS_LOG_DEBUG("TX of a non-initial frame of a TXOP failed: invoke backoff");
+            m_edca->Txop::NotifyChannelReleased(m_linkId);
+            m_edcaBackingOff = m_edca;
+            m_edca = nullptr;
+        }
+    }
+    m_initialFrame = false;
+}
+```
