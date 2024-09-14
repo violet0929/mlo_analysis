@@ -130,10 +130,8 @@ HtFrameExchangeManager::BlockAckTimeout(Ptr<WifiPsdu> psdu, const WifiTxVector& 
 * 서브루틴 2. MissedBlockAck(psdu, txVector, resetCw);
   * 2.2. 참고
 * 서브루틴 3. Contention Window 재설정
-  * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
   * 2.3.1. 및 2.3.2. 참고
 * 서브루틴 4. TransmissionFailed();
-  * A-mpdu 전송 실패에 따른 Channel State 관리하는 로직을 포함
   * 2.4. 참고
 
 ### 2.1. ns3::WifiRemoteStationManager::ReportDataFailed (중요도 하)
@@ -257,7 +255,9 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
 }
 ```
 * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함
-
+* 여기 Case 분류가 굉장히 까다로움
+  * Case 1. BA Request 프레임이 손실된 경우 (즉, mpdu 및 A-mpdu의 BA Timeout event가 invoke된 후, BA Req 프레임을 전송했지만 해당 프레임이 손실)
+  * Case 2. mpdu 및 A-mpdu 프레임이 손실된 경우 (즉, 손실된 프레임을 recovery하기 위해 BA Req 프레임을 전송해야 함)
 
 ### 2.3.1. ns3::Txop::ResetCw (중요도 중)
 ```c
@@ -270,6 +270,7 @@ Txop::ResetCw(uint8_t linkId)
     m_cwTrace(link.cw, linkId);
 }
 ```
+* 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
 
 ### 2.3.2. ns3::Txop::UpdateFailedCw (중요도 중)
 ```c
@@ -285,6 +286,7 @@ Txop::UpdateFailedCw(uint8_t linkId)
     m_cwTrace(link.cw, linkId);
 }
 ```
+* 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
 
 ### 2.4. ns3::QosFrameExchangeManager::TransmissionFailed (중요도 상)
 ```c
@@ -339,3 +341,4 @@ QosFrameExchangeManager::TransmissionFailed()
     m_initialFrame = false;
 }
 ```
+* A-mpdu 전송 실패에 따른 Channel State 관리하는 로직을 포함
