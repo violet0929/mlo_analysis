@@ -380,10 +380,16 @@ BlockAckManager::ScheduleBar(const CtrlBAckRequestHeader& reqHdr, const WifiMacH
 }
 ```
 * 생성된 BA req frame을 WifiMacQueue에 Enqueue (이때, 같은 recipient 주소를 갖고 있는 BA Req frame이 이미 존재 할 경우 replace 처리)
-* 따라서, 재전송을 수행하기 위한 BA Req frame은 Mac queue에 enqueue되어 향후 해당 TXOP를 획득할 때 자연스럽게 전송되게 됨.
-  * 근데, 왜 BA Req 프레임 하나만 날아가는거지? << 이거 생각해 봐야됨
-  * BA Req + data <-> BA 가 아닌 BA req <-> BA + data <-> BA인 이유
-
+* 따라서, 재전송을 수행하기 위한 BA Req frame은 Mac queue에 enqueue되어 향후 해당 TXOP를 획득할 때 자연스럽게 전송하게 됨.
+* 근데, 왜 BA Req 프레임 하나만 날아가는거지? << 이거 생각해 봐야됨 (즉, BA Req + data <-> BA 가 아닌 BA req <-> BA + data <-> BA인 이유)
+* Both Block Acknowledgement Request (BA Request) frames and data frames coexist in the TXOP (Transmit Opportunity) queue, they are transmitted independently
+* 두 가지 관점에서의 independently하게 수행하는 이유
+  * TXOP Utilization
+    * The BA Request frame and data frames can be part of this transmission, but their transmission might be managed by the protocol to avoid collisions and ensure efficient use of the TXOP
+  * Prioritization and Scheduling
+    * Data Frames (include actual payload) are typically sent in the order they are queued, but their transmission might be deferred if higher-priority frames (like BA Requests) need to be sent first
+* 근데 어디까지나 MAC implementation에 따라 policy는 바뀔 수 있으니 ns-3 코드 한번 확인해봐야됨
+  
 ### 2.3.1. ns3::Txop::ResetCw (중요도 중)
 ```c
 void
