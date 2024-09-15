@@ -390,7 +390,7 @@ BlockAckManager::ScheduleBar(const CtrlBAckRequestHeader& reqHdr, const WifiMacH
     * Data Frames (include actual payload) are typically sent in the order they are queued, but their transmission might be deferred if higher-priority frames (like BA Requests) need to be sent first
 * 근데 어디까지나 MAC implementation에 따라 policy는 바뀔 수 있으니 ns-3 코드 한번 확인해봐야됨
   
-### 2.3.1. ns3::Txop::ResetCw (중요도 중)
+### 2.3.1. ns3::Txop::ResetCw && ns3::Txop::UpdateFailedCw (중요도 중)
 ```c
 void
 Txop::ResetCw(uint8_t linkId)
@@ -401,9 +401,7 @@ Txop::ResetCw(uint8_t linkId)
     m_cwTrace(link.cw, linkId);
 }
 ```
-* 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
 
-### 2.3.2. ns3::Txop::UpdateFailedCw (중요도 중)
 ```c
 void
 Txop::UpdateFailedCw(uint8_t linkId)
