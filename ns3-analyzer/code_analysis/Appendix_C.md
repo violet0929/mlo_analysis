@@ -546,10 +546,22 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
 * 이후 HtFrameExchangeManager::SendPsduWithProtection 호출, 이하 일반적인 A-mpdu (include actual payload) 전송과 동일
 * 결론적으로, A-mpdu (include actual payload)전송과 BA Req 전송은 조건만 다를 뿐, 동일한 수행 과정을 거침 (별도 독립적인 retransmission event가 있는게 아님)
 
-### Supplementary 2: Structure of BA Req frame
+### Supplementary 2: Information included in Block Ack frame
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/075f0389-a355-4498-b80b-db2f9b35bc5f" width="40%">  
 </p>
+
+* Bitmap information included in BA frame
+  * BA bitmap consists of 64 bits (256 bits for Extended block ack)
+  * Each bit represents a specific data frame
+  * Bit value 0: data frame was receivied successfully
+  * Bit value 1: not received yet
+* 따라서, 송신기 (originator)는 수신기 (recipient)로 부터 전송된 BA frame에 내포되어 있는 bitmap 정보를 통해 현재 수신기가 성공적으로 수신한 frame의 정보를 알 수 있음
+* (⭐ 중요!!) Missing frame does not mean a frame that failed to be transmitted (especially in Multi-link operation)
+  * No basis for to release the in-flight state of MPDUs (수신에 실패 했다는 뜻이 100% 손실 되었다는 의미는 아님, 현재 전송중 상태일 수도 있음) 
+  * 같은 맥락으로, BA Req frame이 생성되는 조건은 BA timeout이 발생했을 때이며, Missing frame 정보를 수신했을 때가 아님
+* 이것과 파생되는 논의사항으로 BA Req frame은 반드시 이전에 BA timeout이 발생한 psdu가 전송된 링크과 같은 링크로 전송되어야 함
+  * 시간 남을 때 정리하기
 
 ### Summary
 * 재전송이 수행되는 건 event가 별도로 invoke되는 것이 아닌, 일반적으로 TXOP 획득하고 데이터 전송하는 것과 같은 과정을 수행함
