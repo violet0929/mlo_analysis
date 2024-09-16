@@ -362,9 +362,8 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
   * 증명을 위해 이전 시점의 AP 입장에서, link 1 및 link 2에서의 communication 과정을 봐야함 (굉장히 복잡하니까 천천히 차근차근)
 
 <p align="center">  
-  <img src="https://github.com/user-attachments/assets/26cdf619-1f17-48cd-90cd-7dcd7d30a459" width="80%">  
+  <img src="https://github.com/user-attachments/assets/77b1f270-3b87-4ad3-9641-2e95a891af71" width="80%">  
 </p>
-
 
 
 ### Summary
