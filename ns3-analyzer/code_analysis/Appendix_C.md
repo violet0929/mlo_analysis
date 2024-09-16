@@ -43,14 +43,14 @@ n. Time: 1.088461s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 8
   * 근데, 확실한 건 아닌게, 엄연히 송신 device가 계산한 유효 시간은 '예상'에 불과함 지연이 발생할 가능성이 충분히 있음
   * 표준문서를 좀 찾아봤는데, 해당 내용에 대해 자세히 기술된 내용은 없었음 (교수님께 한번 여쭤봐야겠음)
 
-* 정보 2: TXOP를 획득한 후 초기 프레임으로 보낸 프레임은 'BA Req' 프레임임
+* 정보 2: TXOP를 획득한 후 'BA Req' frame이 초기 frame으로서 전송됨
   * Appendix. B. 에서 예상한대로 1500 byte보다 훨씬 작은 크기를 가짐 (56 byte)
   * BA Req 프레임의 전송 시점 (1.084382s)과 재전송된 A-mpdu에 대한 BA를 받은 시점 (1.088461s)과의 시간 간격은 4.079ms임
   * 참고로, VI TXOP limit의 값은 4.096ms임
   * 따라서, 해당 관점에서는 해석 1에 조금 더 가까운 것 같음
 
 * 관점에 따라 해석이 조금 다를 수 있지만, 아무튼 코드 분석은 해야됨 (목적은 잡고 들어가자)
-  * 목적 1. 우선, BA Req frame이 VI에 해당하는 TXOP를 획득하고 전송한 초기 프레임이 맞는지 확인해야 됨
+  * 목적 1. 우선, BA Req frame이 VI에 해당하는 TXOP를 획득하고 전송한 초기 프레임이 확실히 맞는지 확인해야 됨
   * 목적 2. BA Req frame의 전송과 retranmission과의 연관 관계를 확인해야 됨
 
 * 자 그럼, breakpoint를 걸어야 되는데... 어디에 어떻게 걸 것인가가 관건임 (일반적인 mpdu가 아니기 때문에 header를 기반으로 하기 힘듬)
@@ -381,7 +381,7 @@ BlockAckManager::ScheduleBar(const CtrlBAckRequestHeader& reqHdr, const WifiMacH
 * 생성된 BA req frame을 WifiMacQueue에 Enqueue (이때, 같은 recipient 주소를 갖고 있는 BA Req frame이 이미 존재 할 경우 replace 처리)
 * 따라서, 재전송을 수행하기 위한 BA Req frame은 Mac queue에 enqueue되어 향후 해당 TXOP를 획득할 때 자연스럽게 전송하게 됨.
 * 근데, 왜 BA Req 프레임 하나만 날아가는거지? << 이거 생각해 봐야됨 (즉, BA Req + data <-> BA 가 아닌 BA req <-> BA + data <-> BA인 이유)
-* Both Block Acknowledgement Request (BA Request) frames and data frames coexist in the TXOP (Transmit Opportunity) queue, they are transmitted independently
+* Both Block Acknowledgement Request frames and data frames (include actual payload) coexist in the TXOP queue, they are transmitted independently
 * 두 가지 관점에서의 independently하게 수행하는 이유
   * TXOP Utilization
     * The BA Request frame and data frames can be part of this transmission, but their transmission might be managed by the protocol to avoid collisions and ensure efficient use of the TXOP
@@ -480,7 +480,7 @@ QosFrameExchangeManager::TransmissionFailed()
   * Case 2: 전송에 실패한 frame이 TXOP를 획득한 후 전송한 첫 번째 frame이 아닌 경우
     * PIFS recovery 또는 새로운 Backoff value 생성 (조건부 channel access)
 
-### Supplementary: ns3::HtFrameExchangeManager::StartFrameExchange
+### Supplementary 1: ns3::HtFrameExchangeManager::StartFrameExchange
 ```c
 bool
 HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
@@ -541,11 +541,19 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     return QosFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
 }
 ```
-* BREAKPOINT: 채널 접근 및 데이터 전송 수행 과정 (Appendix A 참고)에서 actual data를 보내기 전에 BA req frame 조건이 먼저 걸리는 걸 확인할 수 있음 :)
+* BREAKPOINT: 채널 접근 및 데이터 전송 수행 과정 (Appendix A 참고)에서 actual data를 보내기 전에 BA req frame 조건이 먼저 걸리는 걸 확인할 수 있음
+* 이후 HtFrameExchangeManager::SendMpduFromBaManager 호출
+* 이후 HtFrameExchangeManager::SendPsduWithProtection 호출, 이하 일반적인 A-mpdu (include actual payload) 전송과 동일
+* 결론적으로, A-mpdu (include actual payload)전송과 BA Req 전송은 조건만 다를 뿐, 동일한 수행 과정을 거침 (별도 독립적인 retransmission event가 있는게 아님)
 
+### Supplementary 2: Structure of BA Req frame
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/075f0389-a355-4498-b80b-db2f9b35bc5f" width="40%">  
+</p>
 
 ### Summary
-* 재전송 event가 invoke되는 조건은 전송한 psdu에 대한 BA timeout이 발생해야 함 (mpdu의 lifetime expire와는 다른 개념)
-* 조건에 따라 BA req frame이 생성되고 해당 frame이 전송되기 위해 획득한 TXOP의 MAC Queue에 enqueue되는 방식임
-  * MAC Queue 내부의 mpdu (i.e., actual data)들과 BA req frame이 공존하는 상황에서 BA Req frame이 independently하게 우선 전송됨
+* 재전송이 수행되는 건 event가 별도로 invoke되는 것이 아닌, 일반적으로 TXOP 획득하고 데이터 전송하는 것과 같은 과정을 수행함
+  * 전송한 psdu에 대한 BA timeout 발생 -> BA Req frame 생성 -> TXOP MAC Queue에 Enqueue (이건 독립적인 event임)
+  * 자연스럽게 BA Req frame 전송될거고, 해당 psdu에 대한 BA (손실된 frame에 대한 정보) 수신 받음 
+* MAC Queue 내부의 mpdu (include actual payload)들과 BA req frame이 공존하는 상황에서 BA Req frame이 independently하게 우선 전송됨
 * 조건에 따라 Contention window value 및 Channel State까지 관리함
