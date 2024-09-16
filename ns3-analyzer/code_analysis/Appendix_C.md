@@ -171,7 +171,7 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
  
     auto recipient = psdu->GetAddr1();
     auto recipientMld = GetWifiRemoteStationManager()->GetMldAddress(recipient).value_or(recipient);
-    bool isBar;
+    bool isBar;se
     uint8_t tid;
  
     if (psdu->GetNMpdus() == 1 && psdu->GetHeader(0).IsBlockAckReq())
@@ -255,7 +255,7 @@ HtFrameExchangeManager::MissedBlockAck(Ptr<WifiPsdu> psdu,
 }
 ```
 * 전송했던 A-mpdu에 대한 BlockAck이 손실됨에 따라 처리해야하는 로직을 포함
-* Supplementary: Implicit BlockAckReq vs Explicit BlockAckReq
+* Implicit BlockAckReq vs Explicit BlockAckReq
   * BlockAckReq: how the acknowledgment process is initiated and handled during data transmission in wireless communication
   * Implicit BlockAckReq: the sender assumes that the receiver will automatically acknowledge the reception of data blocks without needing an explicit request to trigger the acknowledgment process
   * Explicit BlockAckReq: the sender explicitly requests a block acknowledgment from the receiver after transmitting a series of data frames
@@ -313,10 +313,9 @@ BlockAckManager::NeedBarRetransmission(uint8_t tid, const Mac48Address& recipien
     return false;
 }
 ```
-* 집가서 it << 이거 structure 봐야함
 * 수신기 (originator)의 MAC Queue에 존재하는 mpdu가 inflight 상태 (lifetime이 expire 되지 않은 상태)이면 true 반환
-* 근데 BAR transmission이 아니라 retransmission인거 한번 확인해봐야함
-  * 원본 A-mpdu 전송에서 implicit BA Req 방식을 사용했으며, 손실에 따른 첫 번째 BA req전송에도 BAR retransmission이 호출됨
+* 근데 BAR transmission이 아니라 retransmission인거 한번 확인해봐야함 
+  * 원본 A-mpdu 전송에서 implicit BA Req 방식을 사용했으며, 손실에 따른 첫 번째 BA req전송에도 BAR retransmission이 호출됨 (별 의미 없는거 같음)
 
 ### 2.2.2. ns3::QosTxop::PrepareBlockAckRequest
 ```c
@@ -388,7 +387,7 @@ BlockAckManager::ScheduleBar(const CtrlBAckRequestHeader& reqHdr, const WifiMacH
     * The BA Request frame and data frames can be part of this transmission, but their transmission might be managed by the protocol to avoid collisions and ensure efficient use of the TXOP
   * Prioritization and Scheduling
     * Data Frames (include actual payload) are typically sent in the order they are queued, but their transmission might be deferred if higher-priority frames (like BA Requests) need to be sent first
-* 근데 어디까지나 MAC implementation에 따라 policy는 바뀔 수 있으니 ns-3 코드 한번 확인해봐야됨
+* 근데 어디까지나 MAC implementation에 따라 policy는 바뀔 수 있으니 ns-3 코드 한번 확인해봐야됨 -> Supplementary 참고
   
 ### 2.3.1. ns3::Txop::ResetCw && ns3::Txop::UpdateFailedCw (중요도 중)
 ```c
@@ -416,6 +415,9 @@ Txop::UpdateFailedCw(uint8_t linkId)
 }
 ```
 * 서브루틴 2. MissedBlockAck의 인자 값으로 넘기는 bool 변수 resetCw의 상태에 따라 Contention Window 조정하는 로직을 포함
+* ResetCw: in case of successful transmission, CW is reset to Cwmin
+* UpdateFailedCw: in case of failed transmission, CW is updated to min(2 x (link.cw + 1) - 1, max(link.cw))
+* BA req frame 또는 A-mpdu가 전송되는 경우 UpdateFailedCw 호출, 전송되지 않는 경우 ResetCw 호출
 
 ### 2.4. ns3::QosFrameExchangeManager::TransmissionFailed (중요도 상)
 ```c
@@ -471,3 +473,18 @@ QosFrameExchangeManager::TransmissionFailed()
 }
 ```
 * A-mpdu 전송 실패에 따른 Channel State 관리하는 로직을 포함
+* Case Study
+  * Case 1: 전송에 실패한 frame이 TXOP를 획득한 후 전송한 첫 번째 frame인 경우
+    * Channel Release 수행 (즉, Terminate TXOP )
+    * 첫 번째 frame의 전송 실패의 의미: 여러 관점에서 해석할 수 있지만, 결론적으로 후속 frame의 손실 가능성이 높으므로 효율성 측면에서 release 수행
+  * Case 2: 전송에 실패한 frame이 TXOP를 획득한 후 전송한 첫 번째 frame이 아닌 경우
+    * PIFS recovery 또는 새로운 Backoff value 생성 (조건부 channel access)
+
+### Supplementary
+
+
+### Summary
+* 재전송 event가 invoke되는 조건은 전송한 psdu에 대한 BA timeout이 발생해야 함 (mpdu의 lifetime expire와는 다른 개념)
+* 조건에 따라 BA req frame이 생성되고 해당 frame이 전송되기 위해 획득한 TXOP의 MAC Queue에 enqueue되는 방식임
+  * MAC Queue 내부의 mpdu (i.e., actual data)들과 BA req frame이 공존하는 상황에서 BA Req frame이 independently하게 우선 전송됨
+* 조건에 따라 Contention window value 및 Channel State까지 관리함
