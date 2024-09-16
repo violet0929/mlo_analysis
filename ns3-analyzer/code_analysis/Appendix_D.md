@@ -351,7 +351,7 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 ### Supplementary: Recipient MPDU buffer state
 * 시나리오를 다시 보자
 ```
-⭐ AP 입장 / link 1
+⭐ AP 입장, link 1
 1. Time: 1.478139s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 54 / Info: 802.11 Block Ack
 2. Time: 1.479107s / Src: 192.168.1.2 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 1842)
 ...
@@ -359,8 +359,13 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 9. Time: 1.479117s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 54 / Info: 802.11 Block Ack
 ```
 * 1.479107s 시점에 STA 1이 link 1을 통해 Seq # 1842 ~ 1847에 해당하는 A-mpdu를 전송할 때, 왜 수신기의 시작 seq #는 1784일까?
-  * 증명을 위해서는 이전 시점에서의 AP와 STA간의 communication 과정을 봐야함 (굉장히 복잡하니까 천천히 차근차근)
+  * 증명을 위해 이전 시점의 AP 입장에서, link 1 및 link 2에서의 communication 과정을 봐야함 (굉장히 복잡하니까 천천히 차근차근)
 
+```
+
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/1090f583-5f05-43fc-a22b-2361f6cef781" width="100%">  
+</p>
 
 
 
