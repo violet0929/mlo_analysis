@@ -373,9 +373,10 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
   * (⭐ 중요) 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1784 ~ 1812는 전송 중인(inflight) 상태임
   * 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1813 ~ 1841은 ACK를 받은 상태임
   * (⭐ 매우 중요) 해당 시점은, link 2에서 충돌이 발생한 A-mpdu에 대한 BA Timeout이 발생하기 전임
-* (⭐ 중요) 또한, link 2에서 seq # 1784 ~ 1812에 해당하는 A-mpdu를 재전송할 때 앞서 BA Req-BA의 통신으로 인해 부분 재전송이 수행됨
+  * 따라서, MPDU buffer state에 제약을 받아 6개의 MPDU가 aggregation되어 전송됨
+* (⭐ 중요) 또한, link 2에서 seq # 1784 ~ 1812에 해당하는 A-mpdu를 재전송할 때 앞서 BA Req <-> BA의 통신으로 인해 부분 재전송이 수행됨
 * (⭐ 중요) 만약, link 1에서 획득한 TXOP가 BA Timeout이 발생한 후의 시점이면, seq # 1784 ~ 1812에 해당하는 A-mpdu는 link 1을 통해 재전송될 것임
-  * (⭐ 매우 중요) 재전송을 수행할 때, MPDU buffer state에 제약을 받지 않고 BA Req - BA의 통신이 없었으므로 seq # 1784 ~ 1812에 해당하는 A-mpdu를 initial frame으로서 totally retransmit이 수행됨
+  * (⭐ 매우 중요) 재전송을 수행할 때, MPDU buffer state에 제약을 받지 않고 BA Req <-> BA의 통신이 없었으므로 seq # 1784 ~ 1812에 해당하는 A-mpdu를 initial frame으로서 totally retransmit이 수행됨
 
 ### Summary
 * 
