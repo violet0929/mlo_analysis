@@ -318,7 +318,7 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
   * ns3::QosTxop::GetNextMpdu
   * ns3::QosFrameExchangeManager::TryAddMpdu
   * ns3::HtFrameExchangeManager::IsWithinLimitsIfAddMpdu
-  * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 답 찾을 수 있음 2.1.1 ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits 참고
+  * ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits <- 답 찾을 수 있음 2.1.1. 참고
  
 ### 2.1.1. ns3::QosFrameExchangeManager::IsWithinSizeAndTimeLimits (⭐ 중요도 상)
 ```c
