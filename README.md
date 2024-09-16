@@ -6,7 +6,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ## Table of Contents
 * [Overview](#overview)
-* [Goal](#goal)
 * [Package](#package)
 * [Running](#running)
 * [References](#references)
@@ -17,10 +16,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * B. [AC_VI Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_B.md)
   * C. [Block ACK Request](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_C.md)
   * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_D.md)
-* 위 분석을 기반으로, 3가지 관점에서의 contribution 존재
-  * IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
-  * 특정 재전송 상황에서의 문제점 분석 및 해결 방안 제안
-  * ns3에서 도출된 pcap file에서 변환된 json file 기반 성능 분석 및 시각화
+* 3 tasks are classified and performed sequentially as described in the below
+  * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
+  * Task 2: 특정 재전송 상황에서의 문제점 분석 및 해결 방안 제안
+  * Task 3: ns3에서 도출된 pcap file에서 변환된 json file 기반 성능 분석 및 시각화
 
 ## Package
 * Ubuntu: 22.04
