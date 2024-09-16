@@ -2,7 +2,7 @@
 
 ### Objective
 * 해당 문서에서는 ns-3.40 기반 Device의 MPDU Buffer Size와 관련된 분석을 수행함
-* 송신기의 Buffer Size의 한계로 인한 aggregation size의 제약
+* 수신기의 Buffer Size의 한계로 인한 aggregation size의 제약
 * Buffer에 존재하는 MPDU들의 state 정보 분석
 * 앞서 분석한 내용 (Appendix. A, B, C 참고)과 공통되는 부분은 다루지 않음
 
@@ -378,6 +378,14 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 * (⭐ 매우 중요) 만약, link 1에서 획득한 TXOP가 BA Timeout이 발생한 후의 시점이라 할지라도, seq # 1784 ~ 1811에 해당하는 A-mpdu는 link 1을 통해 부분 재전송되지 않음
   * BA Req frame은 반드시 Timeout이 발생한 psdu가 전송되었던 링크와 같은 링크를 통해 전송됨 (자연스럽게 같은 링크에서 부분 재전송 수행)
 * (⭐ 매우 중요) 향후 재전송을 수행 하지 못한 seq # 1812에 해당하는 mpdu는 link 2가 아닌 link 1에서 재전송이 수행될 수 있음
+* 결론적으로, recipient MPDU buffer state에 제약을 받는 경우를 생각해보면 다음과 같음
+  * 근본적으로 Buffer의 크기가 작을 때 (특히, 다중 링크 동작과 같이 높은 처리량을 제공하는 네트워크 환경에서)
+  * 충돌이 발생할 때 (재전송으로 인해 MPDU buffer queue의 winStart 부분이 sliding 되지 않기 때문에)
+* 그럼 항상 큰 buffer size가 좋은가?에 대한 고민을 해보면, 당연히 아님 (충돌이 발생했을 때 overhead가 너무 큼)
+  * trade-off 관계를 따져가며 실험을 해보는거 괜찮을 거 같음
 
 ### Summary
-* 
+* 수신기의 Buffer Size의 한계로 인한 aggregation size의 제약이 발생할 수 있음 (특히, 작은 buffer size와 잦은 충돌이 발생할 때)
+* Buffer에 존재하는 MPDU들의 state 정보는 in-flight, need tx, need re-tx, recived ACK 등 다양한 상태가 존재할 수 있음
+* Appendix A ~ D를 통해 MAC 계층에서의 기본적인 동작에 대한 이해를 함
+  * 남은건 Backoff procedure, MAC Queue scheduling 정도..? 필요하다면 Appendix는 계속 추가할 예정
