@@ -112,7 +112,7 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
     * 애초에 TXOP Limit에 제약을 먼저 받음 (payload size가 동일하므로, 제약을 받으려면 BE와 같이 최소 39개는 aggregation 되어야 함)
   * 근데, TXOP limit에 제약을 받으려면 30개의 MPDU가 aggregation 되어야함 (일반적으로 29개에 해당하는 MPDU가 aggregation되어 전송되므로)
   * 그럼 남은 조건 딱 하나 있음 (window size)
-* 두가자~
+* 서브루틴 진입 두가자~ -> 1.1. MpduAggregator::GetNextAmpdu 참고
 
 ### 1.1. MpduAggregator::GetNextAmpdu (⭐ 중요도 상)
 ```c
@@ -189,12 +189,13 @@ MpduAggregator::GetNextAmpdu(Ptr<WifiMpdu> mpdu,
 }
 ```
 * Seq # 1842 ~ 1847까지 aggregation 되므로 추가 코드를 통해 BP 새로 걸어줌
-* 기존에는 nextMpdu가 nullptr가 되어 MAC Queue 순회 loop를 벗어났는데, 조건이 조금 다름
+* 기존 (Appendix A, B)에는 nextMpdu가 nullptr가 되어 MAC Queue 순회 loop를 벗어났는데, 조건이 조금 다름
   * nextMpdu <= peekedMpdu (seq #: 1847) 할당하고
   * mpduList.push_back(nextMpdu)로 (seq #: 1847) mpdu insert하는 것 까지는 동일
   * 이후 peekedMpdu를 통해 mpdu (seq #: 1848)을 가져오는 과정에서 nullptr이 할당됨
   * 따라서, nextMpdu가 nullptr이 되고 자연스럽게 MAC Queue 순회 loop 탈출하는 방식임
   * 결론적으로 PeekNextMpdu 동작 과정 분석이 필요함 -> 1.1.1. QosTxop::PeekNextMpdu 참고
+* 이후 mpduList return하면서 STEP OUT
  
 ### 1.1.1 QosTxop::PeekNextMpdu (⭐ 중요도 상, 조건문이 되게 많으므로 어디에 걸리는 잘 봐야함)
 ```c
@@ -296,7 +297,7 @@ QosTxop::PeekNextMpdu(uint8_t linkId, uint8_t tid, Mac48Address recipient, Ptr<c
         Mac48Address recipient = hdr.GetAddr1();
         uint8_t tid = hdr.GetQosTid();
 
-        if (m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid) &&
+        if (m_mac->GetBaAgreementEstablishedAsOriginator(recipient, tid) && // 여기 중요!!
             !IsInWindow(sequence,
                         GetBaStartingSequence(recipient, tid),
                         GetBaBufferSize(recipient, tid)))
@@ -325,5 +326,26 @@ QosTxop::PeekNextMpdu(uint8_t linkId, uint8_t tid, Mac48Address recipient, Ptr<c
     * 조건 3: seq#가 할당되어 있으며, 오래된 mpdu인 경우
       * 여기서 오래 되었다의 의미 -> 수신기 (recipient)가 기대하는 mpdu의 seq# 보다 작은 경우
     * 조건 4: 모종의 이유로 전송할 수 없는 mpdu인 경우
-      * ~~모종의 이유를 찾아보려고 했는데 virtual method라 구현 위치를 모르겠음~~ (찾음, AP와 STA이 association되어 있지 않은 경우임)
-*
+      * ~~모종의 이유를 찾아보려고 했는데 virtual method라 implementation 위치를 모르겠음~~ (찾음, AP와 STA이 association되어 있지 않은 경우)
+* 이후 seq # (1848)를 local variable에 임시 할당
+* (⭐ 중요) IsInWindow function을 호출하는데 이때 넘기는 인자 값은 아래와 같음
+  * sequence = 이전에 임시 할당한 wlan seq # 즉, 1848
+  * GetBaStartingSeqeuence(recipient, tid) = 수신기 (recipient)의 특정 AC에 해당하는 MAC Queue의 시작 seq # (1784)
+  * GetBaBufferSize(recipient, tid)) = 수신기 (recipient)의 특정 AC에 해당하는 MPDU Buffer Size (64)
+  * return 값이 false이므로, nullptr 반환 -> 1.1.1.1. ns3::WifiUtils::IsInWindow 참고
+
+### 1.1.1.1. ns3::WifiUtils::IsInWindow 
+```c
+bool
+IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
+{
+    return ((seq - winstart + 4096) % 4096) < winsize;
+}
+```
+* 좌변 ((seq - winstart + 4096) % 4096) = ((1848 - 1784 + 4096) % 4096 = 64
+* 우변 winsize = 64
+* 즉, false 반환
+* false의 의미 -> 수신기 (recipient)입장에서 시작 seq # 및 MPDU buffer size를 기반으로 계산된 기대하고 있는 seq #를 초과한 MPDU를 전송할 수 없음
+
+### Summary
+* 
