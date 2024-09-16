@@ -156,9 +156,10 @@ WifiRemoteStationManager::ReportDataFailed(Ptr<const WifiMpdu> mpdu)
     DoReportDataFailed(Lookup(mpdu->GetHeader().GetAddr1()));
 }
 ```
-* RemoteStationManager 동일 link에 association되어 있는 모든 device를 관리하는 클래스
+* RemoteStationManager -> 동일 link에 association되어 있는 모든 device를 관리하는 클래스
 * m_macTxDataFailed -> ns-3 Trace source, 별도 동작 없음
-* DoReportDataFailed: C++ virtual method, 손실된 mpdu를 포함하고 있는 주소와 association 되어 있는 device (즉, STA1)를 인자 값으로 전달, 별도 동작 없음
+* DoReportDataFailed: C++ virtual method, 손실된 mpdu를 포함하고 있는 주소와 association 되어 있는 device (즉, STA1)를 인자 값으로 전달
+  * Implementation 되어 있는 sub class를 찾으려고 했는데 아무리 뒤져도 안나옴 (일단 별도 동작은 없음)
 
 ### 2.2. ns3::HtFrameExchangeManager::MissedBlockAck (⭐ 중요도 최상)
 ```c
