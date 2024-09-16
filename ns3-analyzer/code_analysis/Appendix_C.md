@@ -541,7 +541,7 @@ HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime
     return QosFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
 }
 ```
-* BREAKPOINT: 채널 접근 및 데이터 전송 수행 과정 (Appendix A)에서 actual data를 보내기 전에 BA req frame 조건이 먼저 걸리는 걸 확인할 수 있음 :)
+* BREAKPOINT: 채널 접근 및 데이터 전송 수행 과정 (Appendix A 참고)에서 actual data를 보내기 전에 BA req frame 조건이 먼저 걸리는 걸 확인할 수 있음 :)
 
 
 ### Summary
