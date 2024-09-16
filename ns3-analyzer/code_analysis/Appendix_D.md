@@ -361,8 +361,6 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 * 1.479107s 시점에 STA 1이 link 1을 통해 Seq # 1842 ~ 1847에 해당하는 A-mpdu를 전송할 때, 왜 수신기의 시작 seq #는 1784일까?
   * 증명을 위해 이전 시점의 AP 입장에서, link 1 및 link 2에서의 communication 과정을 봐야함 (굉장히 복잡하니까 천천히 차근차근)
 
-```
-
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/1090f583-5f05-43fc-a22b-2361f6cef781" width="100%">  
 </p>
