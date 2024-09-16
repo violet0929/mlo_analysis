@@ -7,7 +7,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 ## Table of Contents
 * [Overview](#overview)
 * [Package](#package)
-* [Running](#running)
+* [Task](#task)
 * [References](#references)
 
 ## Overview
