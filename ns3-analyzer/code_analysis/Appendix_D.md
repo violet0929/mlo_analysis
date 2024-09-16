@@ -360,11 +360,22 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 ```
 * 1.479107s 시점에 STA 1이 link 1을 통해 Seq # 1842 ~ 1847에 해당하는 A-mpdu를 전송할 때, 왜 수신기의 시작 seq #는 1784일까?
   * 증명을 위해 이전 시점의 AP 입장에서, link 1 및 link 2에서의 communication 과정을 봐야함 (굉장히 복잡하니까 천천히 차근차근)
-
+* 아래 그림 (좌측)은 AP MLD (AP STA1 + AP STA2)와 Non-AP MLD1 (Non-AP STA 1 + Non-AP STA 2) 및 Non-AP MLD2 (Non-AP STA3 + Non-AP STA4)와의 통신 과정을 나타냄
+* 아래 그림 (우측)은 link 1에서 Non-AP STA 1이 seq # 1842 ~ 1847에 대한 A-mpdu을 전송하려는 시점에서의 수신기 (recipient)의 MPDU buffer State를 나타냄
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/77b1f270-3b87-4ad3-9641-2e95a891af71" width="80%">  
 </p>
 
+* 여기서 알 수 있는 정보들!!
+* link 2에서 Non-AP STA2 및 Non-AP STA4가 동시에 TXOP를 획득한 후 A-mpdu를 전송함에 따라 충돌이 발생함 -> 따라서 향후 BA Timeout이 발생한 후 BA Req frame을 보낼 것임
+* 잠시 후, Non-AP STA1은 link 1에서 TXOP를 획득한 후 seq # 1813 ~ 1841에 해당하는 A-mpdu를 전송하고 BA를 수신함
+* 또한, Non-AP STA1은 link 1에서 TXOP를 한번 더 획득한 후 seq # 1842 ~ 1847에 해당하는 A-mpdu를 전송하고 BA를 수신함
+  * (⭐ 중요) 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1784 ~ 1812는 전송 중인(inflight) 상태임
+  * 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1813 ~ 1841은 ACK를 받은 상태임
+  * (⭐ 매우 중요) 해당 시점은, link 2에서 충돌이 발생한 A-mpdu에 대한 BA Timeout이 발생하기 전임
+* (⭐ 중요) 또한, link 2에서 seq # 1784 ~ 1812에 해당하는 A-mpdu를 재전송할 때 앞서 BA Req-BA의 통신으로 인해 부분 재전송이 수행됨
+* (⭐ 중요) 만약, link 1에서 획득한 TXOP가 BA Timeout이 발생한 후의 시점이면, seq # 1784 ~ 1812에 해당하는 A-mpdu는 link 1을 통해 재전송될 것임
+  * (⭐ 매우 중요) 재전송을 수행할 때, MPDU buffer state에 제약을 받지 않고 BA Req - BA의 통신이 없었으므로 seq # 1784 ~ 1812에 해당하는 A-mpdu를 initial frame으로서 totally retransmit이 수행됨
 
 ### Summary
 * 
