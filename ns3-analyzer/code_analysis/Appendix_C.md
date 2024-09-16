@@ -480,7 +480,68 @@ QosFrameExchangeManager::TransmissionFailed()
   * Case 2: 전송에 실패한 frame이 TXOP를 획득한 후 전송한 첫 번째 frame이 아닌 경우
     * PIFS recovery 또는 새로운 Backoff value 생성 (조건부 channel access)
 
-### Supplementary
+### Supplementary: ns3::HtFrameExchangeManager::StartFrameExchange
+```c
+bool
+HtFrameExchangeManager::StartFrameExchange(Ptr<QosTxop> edca, Time availableTime, bool initialFrame)
+{
+    NS_LOG_FUNCTION(this << edca << availableTime << initialFrame);
+
+    // First, check if there is a BAR to be transmitted
+    if (auto mpdu = GetBar(edca->GetAccessCategory());  // BREAKPOINT
+        mpdu && SendMpduFromBaManager(mpdu, availableTime, initialFrame))
+    {
+        return true;
+    }
+
+    Ptr<WifiMpdu> peekedItem = edca->PeekNextMpdu(m_linkId);
+
+    // Even though channel access is requested when the queue is not empty, at
+    // the time channel access is granted the lifetime of the packet might be
+    // expired and the queue might be empty.
+    if (!peekedItem)
+    {
+        NS_LOG_DEBUG("No frames available for transmission");
+        return false;
+    }
+
+    const WifiMacHeader& hdr = peekedItem->GetHeader();
+    // setup a Block Ack agreement if needed
+    if (hdr.IsQosData() && !hdr.GetAddr1().IsGroup() &&
+        NeedSetupBlockAck(hdr.GetAddr1(), hdr.GetQosTid()))
+    {
+        // if the peeked MPDU has been already transmitted, use its sequence number
+        // as the starting sequence number for the BA agreement, otherwise use the
+        // next available sequence number
+        uint16_t startingSeq =
+            (hdr.IsRetry()
+                 ? hdr.GetSequenceNumber()
+                 : m_txMiddle->GetNextSeqNumberByTidAndAddress(hdr.GetQosTid(), hdr.GetAddr1()));
+        return SendAddBaRequest(hdr.GetAddr1(),
+                                hdr.GetQosTid(),
+                                startingSeq,
+                                edca->GetBlockAckInactivityTimeout(),
+                                true,
+                                availableTime);
+    }
+
+    // Use SendDataFrame if we can try aggregation
+    if (hdr.IsQosData() && !hdr.GetAddr1().IsGroup() && !peekedItem->IsFragment() &&
+        !GetWifiRemoteStationManager()->NeedFragmentation(peekedItem =
+                                                              CreateAliasIfNeeded(peekedItem)))
+    {
+        return SendDataFrame(peekedItem, availableTime, initialFrame);
+    }
+
+    // Use the QoS FEM to transmit the frame in all the other cases, i.e.:
+    // - the frame is not a QoS data frame
+    // - the frame is a broadcast QoS data frame
+    // - the frame is a fragment
+    // - the frame must be fragmented
+    return QosFrameExchangeManager::StartFrameExchange(edca, availableTime, initialFrame);
+}
+```
+* BREAKPOINT: 채널 접근 및 데이터 전송 수행 과정 (Appendix A)에서 actual data를 보내기 전에 BA req frame 조건이 먼저 걸리는 걸 확인할 수 있음 :)
 
 
 ### Summary
