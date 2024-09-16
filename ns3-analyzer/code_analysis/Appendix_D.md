@@ -329,9 +329,9 @@ QosTxop::PeekNextMpdu(uint8_t linkId, uint8_t tid, Mac48Address recipient, Ptr<c
       * ~~모종의 이유를 찾아보려고 했는데 virtual method라 implementation 위치를 모르겠음~~ (찾음, AP와 STA이 association되어 있지 않은 경우)
 * 이후 seq # (1848)를 local variable에 임시 할당
 * (⭐ 중요) IsInWindow function을 호출하는데 이때 넘기는 인자 값은 아래와 같음
-  * sequence = 이전에 임시 할당한 wlan seq # 즉, 1848
-  * GetBaStartingSeqeuence(recipient, tid) = 수신기 (recipient)의 특정 AC에 해당하는 MAC Queue의 시작 seq # (1784)
-  * GetBaBufferSize(recipient, tid)) = 수신기 (recipient)의 특정 AC에 해당하는 MPDU Buffer Size (64)
+  * sequence = 이전에 임시 할당한 wlan seq #, 1848
+  * GetBaStartingSeqeuence(recipient, tid) = 수신기 (recipient)의 특정 AC에 해당하는 MAC Queue의 시작 seq #, 1784
+  * GetBaBufferSize(recipient, tid)) = 수신기 (recipient)의 특정 AC에 해당하는 MPDU Buffer Size, 64
   * return 값이 false이므로, nullptr 반환 -> 1.1.1.1. ns3::WifiUtils::IsInWindow 참고
 
 ### 1.1.1.1. ns3::WifiUtils::IsInWindow 
@@ -345,7 +345,24 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 * 좌변 ((seq - winstart + 4096) % 4096) = ((1848 - 1784 + 4096) % 4096 = 64
 * 우변 winsize = 64
 * 즉, false 반환
-* false의 의미 -> 수신기 (recipient)입장에서 시작 seq # 및 MPDU buffer size를 기반으로 계산된 기대하고 있는 seq #를 초과한 MPDU를 전송할 수 없음
+* false의 의미 -> 수신기 (recipient)입장에서, 시작 seq # 및 MPDU buffer size를 기반으로 계산된 기대하고 있는 seq #를 초과한 MPDU를 수신 받을 수 없음
+  * 반대로 말하면, 송신기 (originator)입장에서, 수신기 (recipient)가 수신 받을 수 없는 MPDU를 송신할 수 없음
+
+### Supplementary: Recipient MPDU buffer state
+* 시나리오를 다시 보자
+```
+**AP 입장 / link 1**
+1. Time: 1.478139s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 54 / Info: 802.11 Block Ack
+2. Time: 1.479107s / Src: 192.168.1.2 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 1842)
+...
+8. Time: 1.479107s / Src: 192.168.1.2 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 1847)
+9. Time: 1.479117s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:02 / length: 54 / Info: 802.11 Block Ack
+```
+* 1.479107s 시점에 STA 1이 link 1을 통해 Seq # 1842 ~ 1847에 해당하는 A-mpdu를 전송할 때, 왜 수신기의 시작 seq #는 1784일까?
+  * 증명을 위해서는 이전 시점에서의 AP와 STA간의 communication 과정을 봐야함 (굉장히 복잡하니까 천천히 차근차근)
+
+
+
 
 ### Summary
 * 
