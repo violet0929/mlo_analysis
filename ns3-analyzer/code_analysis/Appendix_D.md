@@ -105,7 +105,7 @@ HtFrameExchangeManager::SendDataFrame(Ptr<WifiMpdu> peekedItem,
 ```
 * Aggregation rule 및 mpdu list 확인을 위해 추가 코드 삽입
 * 해당 시점에서 breakpoint걸고, 아래와 같은 variable 값을 보면
-  * availableTime: 4096000 
+  * availableTime: 4096000ns (즉, 4.086ms)
   * initialFrame: True
 * 즉, TXOP를 획득하고 전송하는 첫 번째 frame이라는 뜻임 (여기서 의문점이 들어야됨)
   * VI에 해당하는 MPDU는 최대 PPDU 전송시간에 제약을 받을 수 없음
