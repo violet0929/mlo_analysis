@@ -478,7 +478,7 @@ QosFrameExchangeManager::TransmissionFailed()
     * Channel Release 수행 (즉, Terminate TXOP )
     * 첫 번째 frame의 전송 실패의 의미: 여러 관점에서 해석할 수 있지만, 결론적으로 후속 frame의 손실 가능성이 높으므로 효율성 측면에서 release 수행
   * Case 2: 전송에 실패한 frame이 TXOP를 획득한 후 전송한 첫 번째 frame이 아닌 경우
-    * PIFS recovery 또는 새로운 Backoff value 생성 (조건부 channel access)
+    * PIFS recovery 또는 새로운 Backoff value 생성 (조건부 channel access 수행)
 
 ### Supplementary 1: ns3::HtFrameExchangeManager::StartFrameExchange
 ```c
