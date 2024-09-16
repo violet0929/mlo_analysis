@@ -374,9 +374,10 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
   * 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1813 ~ 1841은 ACK를 받은 상태임
   * (⭐ 매우 중요) 해당 시점은, link 2에서 충돌이 발생한 A-mpdu에 대한 BA Timeout이 발생하기 전임
   * 따라서, MPDU buffer state에 제약을 받아 6개의 MPDU가 aggregation되어 전송됨
-* (⭐ 중요) 또한, link 2에서 seq # 1784 ~ 1812에 해당하는 A-mpdu를 재전송할 때 앞서 BA Req <-> BA의 통신으로 인해 부분 재전송이 수행됨
-* (⭐ 중요) 만약, link 1에서 획득한 TXOP가 BA Timeout이 발생한 후의 시점이면, seq # 1784 ~ 1812에 해당하는 A-mpdu는 link 1을 통해 재전송될 것임
-  * (⭐ 매우 중요) 재전송을 수행할 때, MPDU buffer state에 제약을 받지 않고 BA Req <-> BA의 통신이 없었으므로 seq # 1784 ~ 1812에 해당하는 A-mpdu를 initial frame으로서 totally retransmit을 수행할 것임
+* (⭐ 중요) 또한, link 2에서 seq # 1784 ~ 1812에 해당하는 A-mpdu를 재전송할 때 앞서 BA Req <-> BA의 통신으로 인해 seq # 1812를 제외한 부분 재전송이 수행됨
+* (⭐ 매우 중요) 만약, link 1에서 획득한 TXOP가 BA Timeout이 발생한 후의 시점이라 할지라도, seq # 1784 ~ 1811에 해당하는 A-mpdu는 link 1을 통해 부분 재전송되지 않음
+  * BA Req frame은 반드시 Timeout이 발생한 psdu가 전송되었던 링크와 같은 링크를 통해 전송됨 (자연스럽게 같은 링크에서 부분 재전송 수행)
+* (⭐ 매우 중요) 향후 재전송을 수행 하지 못한 seq # 1812에 해당하는 mpdu는 link 2가 아닌 link 1에서 재전송이 수행될 수 있음
 
 ### Summary
 * 
