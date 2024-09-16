@@ -9,6 +9,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * [Package](#package)
 * [Task](#task)
 * [References](#references)
+* [Update](#update)
 
 ## Overview
 * ns3 기반 asynchronous multi-link operation with EDCA의 동작 및 코드 분석은 [여기](https://github.com/violet0929/mlo_analysis/tree/main/ns3-analyzer/code_analysis)를 확인해주세요
@@ -19,7 +20,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * 3 tasks are classified and performed sequentially as described in the below
   * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
   * Task 2: 특정 재전송 상황에서의 문제점 분석 및 해결 방안 제안
-  * Task 3: ns3에서 도출된 pcap file에서 변환된 json file 기반 성능 분석 및 시각화
+  * Task 3: 3 가지 관점에서의 성능 분석
+    * 관점 1: 기존 재전송 방식 vs 제안하는 재전송 방식
+    * 관점 2: 특정 Buffer size에 기반한 네트워크 성능
+    * 관점 2: 여러 AC이 공존하는 상황에서 STA 수에 기반한 네트워크 성능
 
 ## Package
 * Ubuntu: 22.04
@@ -40,8 +44,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 ## References
 
 
-## Note
-* ns3 <-> analyzer 간 ip 동기화가 안맞음 -> AP가 192.168.1.1 / STA이 192.168.1.2 부터 할당되게 변경
+## Update
+* Issue 1) ns3 <-> analyzer 간 ip 동기화가 안맞음 -> AP가 192.168.1.1 / STA이 192.168.1.2 부터 할당되게 변경
 * module/json2csv.py 함수 load_df에서 AP 데이터 기준 json에서 dataframe으로 변환이 안됨 -> uplink 통신이므로 구분을 위해 target 매개변수 값 추가
 * module/json2csv.py 구현 완료: pcap <-> json <-> csv 변환 완료
 
