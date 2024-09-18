@@ -33,9 +33,38 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * GCC: 11.4.0
   
 ## Task
+
 * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
+  * 공통 실험 환경
+    * **Topology** (1AP + 2STA)
+    * **Distance** (10m)
+    * **Channel** (2.4GHz 20MHz + 5GHz 20MHz)
+    * **Traffic flow** (uplink only)
+    * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
+      
   * Case 1.1: 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
-    - 실험 환경: **topology** (1AP + 2STA), **distance** (10m), **Channel** (2.4GHz 20MHz + 5GHz 20MHz), **traffic flow** (uplink only), **data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
+    * 시나리오
+| No  | Time      | Description                  | AC  | A-mpdu ID | Wlan Seq #        | Retry        |
+| :-: | :-------: | :--------------------------: | :-: | :-------: | :---------------: | :----------: |
+| 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI  | 34        | #29 ~ #57         | -            |
+| 2   | 1.024648s | AP <- `STA1` receive A-MPDU  | VI  | 34        | #29 ~ #57         | -            |
+| 3   | 1.024796s | `STA2` -> AP transmit A-MPDU | VI  | 36        | #538 ~ #566       | Need Tx      |
+| 4   | 1.028858s | `STA1` -> AP transmit A-MPDU | VI  | 35        | #58 ~ #86         | -            |
+| 5   | 1.032994s | `STA1` -> AP transmit A-MPDU | VI  | 36        | #87 ~ #115        | -            |
+| 6   | 1.034995s | AP <- `STA1` received A-MPDU | VI  | 35        | #58 ~ #86         | -            |
+| 7   | 1.037148s | `STA1` -> AP transmit A-MPDU | VI  | 37        | #116 ~ #144       | -            |
+| 8   | 1.039131s | AP <- `STA1` received A-MPDU | VI  | 36        | #87 ~ #115        | -            |
+| 9   | 1.041293s | `STA1` -> AP transmit A-MPDU | VI  | 38        | #145 ~ #173       | -            |
+| 10  | 1.043285s | AP <- `STA1` received A-MPDU | VI  | 37        | #116 ~ #144       | -            |
+| 11  | 1.045457s | `STA1` -> AP transmit A-MPDU | VI  | 39        | #174 ~ #202       | Need Tx      |
+| 12  | 1.047431s | AP <- `STA1` received A-MPDU | VI  | 38        | #145 ~ #173       | -            |
+| 13  | 1.051254s | `STA2` -> AP transmit A-MPDU | BE  | 42        | #234 ~ #272       | Need Tx      |
+| 14  | 1.056690s | `STA1` -> AP transmit A-MPDU | BE  | 41        | #39 ~ #77         | -            |
+| 15  | 1.062315s | `STA2` -> AP transmit A-MPDU | VI  | 45        | #538 ~ #565       | Totally Tx   |
+| 16  | 1.064200s | AP <- `STA1` received A-MPDU | VI  | 39        | #39 ~ #77         | -            |
+| 17  | 1.066485s | `STA2` -> AP transmit A-MPDU | VI  | 47        | #566, #741 ~ #768 | Partially Tx |
+| 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI  | 41        | #538 ~ #565       | Totally Rx   |
+| 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
   * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
   * Case 2.1: 재전송되는 패킷이 내부 EDCA contetnion 에서 승리하여 즉시 전송되는 경우
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
