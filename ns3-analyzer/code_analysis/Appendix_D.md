@@ -372,7 +372,7 @@ IsInWindow(uint16_t seq, uint16_t winstart, uint16_t winsize)
 * 또한, Non-AP STA1은 link 1에서 TXOP를 한번 더 획득한 후 seq # 1842 ~ 1847에 해당하는 A-mpdu를 전송하고 BA를 수신함
   * (⭐ 중요) 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1784 ~ 1812는 전송 중인(inflight) 상태임
   * 해당 시점에서의 recipient MPDU buffer state를 보면, seq # 1813 ~ 1841은 ACK를 받은 상태임
-  * (⭐ 매우 중요) 해당 시점은, link 2에서 충돌이 발생한 A-mpdu에 대한 BA Timeout이 발생하기 전임
+  * (⭐ 매우 중요) 해당 시점은, link 2에서 충돌이 발생한 A-mpdu에 대한 BA Timeout이 발생하기 전임 (즉, BA Req frame이 MAC Queue에 enqueue되기 전이라는 뜻)
   * 따라서, MPDU buffer state에 제약을 받아 6개의 MPDU가 aggregation되어 전송됨
 * (⭐ 중요) 또한, link 2에서 seq # 1784 ~ 1812에 해당하는 A-mpdu를 재전송할 때 앞서 BA Req <-> BA의 통신으로 인해 seq # 1812를 제외한 부분 재전송이 수행됨
 * (⭐ 매우 중요) 만약, link 1에서 획득한 TXOP가 BA Timeout이 발생한 후의 시점이라 할지라도, seq # 1784 ~ 1811에 해당하는 A-mpdu는 link 1을 통해 부분 재전송되지 않음
