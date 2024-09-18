@@ -42,7 +42,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
       
   * Case 1.1: 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
-    * 그림으로 표현
+    * 시나리오 분석
       * 파란색 및 초록색 block에 표기되어 있는 번호는 A-mpdu ID를 나타냄
       * 1 칸당 약 1ms를 의미함
       * 가독성을 위해 시간은 소수점 아래 3번째 자리까지 표현 (이하 반올림)
