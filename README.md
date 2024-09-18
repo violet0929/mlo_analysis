@@ -49,7 +49,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
       * (⭐중요) 아래 그림은, `특정 device의 입장`이 아닌 `각 device의 입장`을 기준으로 나타낸 그림
  
 <p align="center">  
-  <img src="https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8" width="40%">  
+  <img src="https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8" width="100%">  
 </p>
   
   * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
