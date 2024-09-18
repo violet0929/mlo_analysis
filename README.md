@@ -98,6 +98,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
       * Partially Tx/Rx -> 단일 A-MPDU에 재전송과 일반 전송에 해당하는 MPDU가 공존하는 경우
       * Totally Tx/Rx -> 단일 A-MPDU에 포함된 모든 MPDU들이 재전송에 해당하는 경우
 
+<p align="center">  
+ 
 | No  | Time      | Description                  | AC  | A-mpdu ID | Wlan Seq #        | Retry        |
 | :-: | :-------: | :--------------------------: | :-: | :-------: | :---------------: | :----------: |
 | 1   | 1.018510s | `STA1` -> AP transmit A-MPDU | VI  | 34        | #29 ~ #57         | -            |
@@ -119,6 +121,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 | 17  | 1.066485s | `STA2` -> AP transmit A-MPDU | VI  | 47        | #566, #741 ~ #768 | Partially Tx |
 | 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI  | 41        | #538 ~ #565       | Totally Rx   |
 | 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
+
+</p>
 
 ## References
 
