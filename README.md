@@ -8,8 +8,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * [Overview](#overview)
 * [Package](#package)
 * [Task](#task)
+* [Supplementary](#supplementary)
 * [References](#references)
-* [Update](#update)
 
 ## Overview
 * ns3 기반 asynchronous multi-link operation with EDCA의 동작 및 코드 분석은 [여기](https://github.com/violet0929/mlo_analysis/tree/main/ns3-analyzer/code_analysis)를 확인해주세요
@@ -42,16 +42,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
       
   * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
-    * 시나리오 분석
-      * 파란색 및 초록색 block에 표기되어 있는 번호는 A-mpdu ID를 나타냄
-      * 1 칸당 약 1ms를 의미함
-      * 시간 단위는 sec이며, 가독성을 위해 소수점 아래 3번째 자리까지 표현 (이하 반올림)
-      * (⭐중요) 아래 그림은, `특정 device의 입장`이 아닌 `각 device의 입장`을 기준으로 나타낸 그림
-      * 자세한 분석은 아래 Supplementary-Case 1.1. 참고
-<p align="center">  
-  <img src="https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8" width="100%">  
-</p>
-  
+    * 
+    * Supplementary - Case 1.1. 참고
   * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
   * Case 2.1: 재전송되는 패킷이 내부 EDCA contetnion 에서 승리하여 즉시 전송되는 경우
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
@@ -203,9 +195,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 </p>
 
 ## References
-
-
-## Update
 
 
   
