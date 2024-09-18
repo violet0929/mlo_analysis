@@ -33,7 +33,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * GCC: 11.4.0
   
 ## Task
-* Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
+* Task 1. IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
   * 공통 실험 환경
     * **Topology** (1AP + 2STA)
     * **Distance** (10m)
@@ -41,13 +41,13 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * **Traffic flow** (uplink only)
     * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
       
-  * Case 1.1: 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
+  * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
     * 시나리오 분석
       * 파란색 및 초록색 block에 표기되어 있는 번호는 A-mpdu ID를 나타냄
       * 1 칸당 약 1ms를 의미함
-      * 가독성을 위해 시간은 소수점 아래 3번째 자리까지 표현 (이하 반올림)
+      * 시간 단위는 sec이며, 가독성을 위해 소수점 아래 3번째 자리까지 표현 (이하 반올림)
       * (⭐중요) 아래 그림은, `특정 device의 입장`이 아닌 `각 device의 입장`을 기준으로 나타낸 그림
- 
+      * 자세한 분석은 아래 Supplementary-Case 1.1. 참고
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8" width="100%">  
 </p>
@@ -57,7 +57,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
 
 ## Supplementary
-### Case 1.1
+### Case 1.1.
 * link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석
   ```
   1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
@@ -119,6 +119,16 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 | 17  | 1.066485s | `STA2` -> AP transmit A-MPDU | VI  | 47        | #566, #741 ~ #768 | Partially Tx |
 | 18  | 1.068316s | AP <- `STA2` received A-MPDU | VI  | 41        | #538 ~ #565       | Totally Rx   |
 | 19  | 1.072622s | AP <- `STA2` received A-MPDU | VI  | 43        | #566, #741 ~ #768 | Partially Rx |
+
+  * 그림으로 표현
+    * 파란색 및 초록색 block에 표기되어 있는 번호는 A-mpdu ID를 나타냄
+    * 1 칸당 약 1ms를 의미함
+    * 시간 단위는 sec이며, 가독성을 위해 소수점 아래 3번째 자리까지 표현 (이하 반올림)
+    * (⭐중요) 아래 그림은, `특정 device의 입장`이 아닌 `각 device의 입장`을 기준으로 나타낸 그림
+      
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/15550ab9-f94c-4301-8209-16c9b07433b8" width="100%">  
+</p>
 
 * 논의사항
   * STA이 전송할 때 사용한 A-mpdu ID와 AP가 수신받은 A-mpdu ID가 다름
