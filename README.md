@@ -196,8 +196,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     3. 1.090517s AP에서 STA1가 재전송한 #174 ~ #201 A-mpdu 수신
     ```
         
-  * 결론적으로 예쁘게 정리
-    ![image](https://github.com/user-attachments/assets/95589418-12a4-460c-ad57-c5842ecccb1b)
+* 결론적으로, 예쁘게 정리해보면 아래 그림과 같음
+
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/95589418-12a4-460c-ad57-c5842ecccb1b" width="100%">  
+</p>
 
 ## References
 
