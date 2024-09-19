@@ -53,7 +53,7 @@
 * 그럼 코드 분석 해야겠지... 송수신간의 코드를 봅시다
 
 ### 1. wifi-analyzer linking 걸어주기
-* ./ns3.40/src/wifi/model/ 디렉토리 위치로 가면 wifi와 관련된 코드 파일 (.cc) 및 헤더 파일 (.h) 있음
+* './ns3.40/src/wifi/model/' 디렉토리 위치로 가면 wifi와 관련된 코드 파일 (.cc) 및 헤더 파일 (.h) 있음
 * 여기다가 wifi-analyzer.h랑 wifi-analyzer.cc 생성하고 print 테스트 함수 하나 만들어 주자, 코드는 다음과 같음
 
 ```c
