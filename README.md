@@ -41,9 +41,13 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * **Traffic flow** (uplink only)
     * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
       
-  * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우  
+  * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
+
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/a4a053dc-2154-435f-b172-3d2b1db59594" width="100%">  
+</p>
     * 
-    * Supplementary - Case 1.1. 참고
+    * 자세한 분석은 Supplementary - Case 1.1. 참고
   * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
   * Case 2.1: 재전송되는 패킷이 내부 EDCA contention 에서 승리하여 즉시 전송되는 경우
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
