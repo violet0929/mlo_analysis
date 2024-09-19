@@ -179,3 +179,20 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
     }
 }
 ```
+* 여기 노트 하나 들어가야됨 (receive function 설명 필요)
+
+### 3. ns3-analyzer implementaion
+* 일단 필요한 정보 리스트업 부터
+  * 시간
+  * 함수가 호출된 device의 MAC 주소
+  * mpdu header에 포함된 송신 및 수신 MAC 주소
+  * payload size (ppdu의 payload 이니까, psdu size = mpdu size)
+  * mpdu의 seq #
+  * BA의 경우, BA 헤더 정보
+  * 일단 이정도, 필요하면 더 추가할 예정
+
+### 4. ns3-analyzer vs Wireshark
+
+### 5. 뭔가 이상한 로그 (수신을 동시에 받지 않음)
+* ⭐ 로그가 특이하다
+
