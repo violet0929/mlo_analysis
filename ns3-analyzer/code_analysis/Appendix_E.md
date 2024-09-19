@@ -52,60 +52,6 @@
  
 * 그럼 코드 분석 해야겠지... 송수신간의 코드를 봅시다
 
-### 1. Analyzer linking 걸어주기# Appendix. E. Latency
-
-### Objective
-* ns-3 <-> Wireshark 간의 동기화 문제 때문에 그냥 wireshark를 버려야 겠음 (진짜 짜증난다ㅠㅠ)
-* ns-3 환경에서 standalone하게 latency등과 같은 성능 지표를 측정할 수 있는 코드를 생성하기 위한 분석 문서임
-* 해당 문서에서는 ns-3.40 기반 PHY 계층에서 송신과 수신에 대한 자세한 내용을 분석함
-
-### Preview
-* 진짜 한 6개월 하면서 눈치를 못챈 내가 레전드
-* 아래와 같은 Wireshark 기반으로 찍힌 AP <-> STA2 통신 과정 시나리오를 보자
-
-```
-⭐ AP 입장, link 1
-1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 8)
-1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 9)
-...
-1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 11)
-9. Time: 0.963139s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:05 / length: 80 / Info: 802.11 Block Ack
-```
-
-```
-⭐ STA2 입장, link 1
-1. Time: 0.960405s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 8)
-1. Time: 0.960405s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 9)
-...
-1. Time: 0.960405s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 11)
-9. Time: 0.961073s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:05 / length: 80 / Info: 802.11 Block Ack
-```
-
-* 각 device의 NIC에서 패킷 캡처를 했을 텐데,, 뭔가 이상함
-  * 뭐가 이상하냐면,, 기존의 특정 seq #를 가지는 mpdu에 대한 latency 측정 방법은 아래와 같음
-  * latency = ((AP가 수신한 시점 - STA이 송신한 시점) / aggregation size)로 계산했음 (즉, (0.963129s - 0.960405s) / 4 = 0.681ms)
-  * 아무 이상한게 없지 않나요?
-  * ㄴㄴ 이상한게 있음 진짜 레전드임 잘 보면 AP 입장에서, STA2가 보낸 A-mpdu에 대한 BA를 0.963139s에 보냄
-  * 근데 STA2 입장에서, AP가 보낸 BA를 받은 시점은 0.961073s 임. (즉, AP가 BA를 보내기도 전에 BA를 받은 거랑 똑같음)
-  * 이때까지 link 1과 link 2간의 시간 동기화만 안맞는 줄 알았는데, device 간에도 시간 동기화가 안맞음
-* 해결 방안 1: AP pcap 파일만 가지고 측정 시도
-  * 문제점 1: 정확한 latency 계산이 안됨
-    * 위의 시나리오에서, STA2의 seq #8 ~ 11에 대한 A-mpdu의 latency는 0.961073s - 0.960405s = 0.668ms이지만, AP는 그걸 계산할 수 있는 방법이 없음
-  * 문제점 2: uplink 통신 기준으로, 손실이 발생할 때 STA 에서 송신한 원본 A-mpdu에 대한 로그가 없음 (왜냐면, AP 한텐 해당 패킷이 캡처가 안됐을 거니까)
-* 해결 방안 2: STA pcap 파일만 가지고 측정 시도
-  * 문제점 1: RTT 시간은 계산할 수 있어도 AP가 해당 패킷을 수신한 정확한 시점 계산이 안됨 (그림 그리기가 어려움)
-  * 문제점 1: STA이 여러 개일 때 시간 동기화가 안맞을 거임 (그림 그리기가 어려움)
-  * 두 문제점 모두 손실이 발생할 때의 정확한 시점과 이유가 도출되기 어려움
-* 잔머리 굴리다가 그냥 포기하고 c++ 코드 짜기로 함 ㅋㅋ
-
-* 그래서 계획은 뭐냐.. ns-3 project에 기존 python 기반으로 되어 있던 analyzer를 올려서 build 할거임
-  * analyzer class 만들어서 linking 걸어주기
-  * ns-3 time를 포함한 ppdu, psdu, mpdu header 및 payload 정보 analyzer에 넘기기
-  * STA 개수 증가 또는 position의 변동과 같은 확장성을 고려한 각 method 별로 network 지표 자동 측정
-  * 제안하는 재전송 방식도 구현할 수 있으면 할 예정
- 
-* 그럼 코드 분석 해야겠지... 송수신간의 코드를 봅시다
-
 ### 1. wifi-analyzer linking 걸어주기
 * ./ns3.40/src/wifi/model/ 디렉토리 위치로 가면 wifi와 관련된 코드 파일 (.cc) 및 헤더 파일 (.h) 있음
 * 여기다가 wifi-analyzer.h랑 wifi-analyzer.cc 생성하고 print 테스트 함수 하나 만들어 주자, 코드는 다음과 같음
