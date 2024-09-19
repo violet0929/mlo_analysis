@@ -41,7 +41,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * **Traffic flow** (uplink only)
     * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
       
-  * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
+  * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우  
     * 
     * Supplementary - Case 1.1. 참고
   * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
@@ -49,9 +49,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
 
 ## Supplementary
-### Case 1.1.
+### Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
 * link 1 (2.4GHz, 20MHz)에서 발생한 아래와 같은 재전송 사건에 대한 분석
   ```
+  ⭐ AP 및 STA2 입장, link 1
   1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
   2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
   3. 1.066485s STA2 -> AP #566, #741 ~ #768 패킷 재전송
@@ -154,16 +155,18 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 따라서, 간섭으로 인해 AP가 STA1이 전송한 39번 A-mpdu에 대한 BA를 송신하지 못함
 
   * (⭐중요) 위 논의사항과 연계하여, 1.051245s 시점 (No. 13)에서 전송한 STA2의 42번 A-mpdu는 손실되었을까?
-    * No. 11 로그 추가 분석 
+    * No. 11 시나리오
     ```
+    ⭐ AP 및 STA1 입장, link 1
     1. 1.045457s STA1 -> AP (AC_VI, A-MPDU ID 39: #174 ~ #202) A-mpdu 송신
     2. 1.084516s STA1 -> AP #174 ~ #201 A-mpdu 재전송
     3. 1.090517s AP에서 STA1가 재전송한 #174 ~ #201 A-mpdu 수신
     ```
     * ~~#202는 어디갔지...로그 봤는데 아무데도 없음... 예상컨데, 설정된 throughtput의 값이 너무 커서 MAC queue에 이슈가 있는거 같음~~
       * link 2를 통해 전송됨..
-    * No. 13 로그 추가 분석 
+    * No. 13 시나리오
     ```
+    ⭐ AP 및 STA2 입장, link 1
     1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
     2. 1.074739s STA2 -> AP #234 ~ #272 A-mpdu 재전송
     3. 1.082250s AP에서 STA2가 재전송한 #234 ~ #272 A-mpdu 수신
@@ -173,9 +176,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * (⭐중요) VI와 BE의 손실된 패킷을 복구하기 위한 재전송 방식이 다르다!?
     * 전송하는 A-mpdu의 AC가 VI인 경우, 원본 A-mpdu가 분할되어 재전송
     * 반면, A-mpdu의 AC가 BE인 경우, 원본 A-mpdu와 동일한 A-mpdu가 재전송
-    * AC에 따른 TXOP Limit 값과 연관성이 있음
+    * 아래 시나리오 참고
+    * AC에 따른 aggregation rule에 차이점이 존재
     * 자세한 분석은 [Appendix.](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/README.md) 참조
     ```
+    ⭐ AP 및 STA2 입장, link 1
     1. 1.024796s STA2 -> AP (AC_VI, A-MPDU ID 36: #538 ~ #566) 패킷 송신
     2. 1.062315s STA2 -> AP #538 ~ #565 패킷 재전송
     3. 1.066485s STA2 -> AP #566, #741 ~ #768 패킷 재전송
@@ -184,6 +189,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     ```
 
     ```
+    ⭐ AP 및 STA1 입장, link 1
     1. 1.045457s STA1 -> AP (AC_VI, A-MPDU ID 39: #174 ~ #202) A-mpdu 송신
     2. 1.084516s STA1 -> AP #174 ~ #201 A-mpdu 재전송
     3. 1.090517s AP에서 STA1가 재전송한 #174 ~ #201 A-mpdu 수신
