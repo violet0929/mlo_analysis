@@ -45,7 +45,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     * 
     * Supplementary - Case 1.1. 참고
   * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
-  * Case 2.1: 재전송되는 패킷이 내부 EDCA contetnion 에서 승리하여 즉시 전송되는 경우
+  * Case 2.1: 재전송되는 패킷이 내부 EDCA contention 에서 승리하여 즉시 전송되는 경우
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
 
 ## Supplementary
