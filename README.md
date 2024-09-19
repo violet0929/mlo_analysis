@@ -160,7 +160,8 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
     2. 1.084516s STA1 -> AP #174 ~ #201 A-mpdu 재전송
     3. 1.090517s AP에서 STA1가 재전송한 #174 ~ #201 A-mpdu 수신
     ```
-    * Not identified issue: #202는 어디갔지...로그 봤는데 아무데도 없음... 예상컨데, 설정된 throughtput의 값이 너무 커서 MAC queue에 이슈가 있는거 같음
+    * ~~#202는 어디갔지...로그 봤는데 아무데도 없음... 예상컨데, 설정된 throughtput의 값이 너무 커서 MAC queue에 이슈가 있는거 같음~~
+      * link 2를 통해 전송됨..
     * No. 13 로그 추가 분석 
     ```
     1. 1.051254s STA2 -> AP (AC_BE, A-MPDU ID 42: #234 ~ #272) A-mpdu 송신
