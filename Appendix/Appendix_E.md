@@ -30,8 +30,7 @@
 * 각 device의 NIC에서 패킷 캡처를 했을 텐데,, 뭔가 이상함
   * 뭐가 이상하냐면,, 기존의 특정 seq #를 가지는 mpdu에 대한 latency 측정 방법은 아래와 같음
   * latency = ((AP가 수신한 시점 - STA이 송신한 시점) / aggregation size)로 계산했음 (즉, (0.963129s - 0.960405s) / 4 = 0.681ms)
-  * 아무 이상한게 없지 않나요?
-  * ㄴㄴ 이상한게 있음 진짜 레전드임 잘 보면 AP 입장에서, STA2가 보낸 A-mpdu에 대한 BA를 0.963139s에 보냄
+  * AP 입장에서, STA2가 보낸 A-mpdu에 대한 BA를 0.963139s에 보냄
   * 근데 STA2 입장에서, AP가 보낸 BA를 받은 시점은 0.961073s 임. (즉, AP가 BA를 보내기도 전에 BA를 받은 거랑 똑같음)
   * 이때까지 link 1과 link 2간의 시간 동기화만 안맞는 줄 알았는데, device 간에도 시간 동기화가 안맞음
 * 해결 방안 1: AP pcap 파일만 가지고 측정 시도
@@ -45,14 +44,14 @@
 * 잔머리 굴리다가 그냥 포기
 
 * 그래서 계획은 뭐냐.. ns-3 project에 기존 python 기반으로 되어 있던 analyzer를 올려서 build 할거임
-  * analyzer class 만들어서 linking 걸어주기
+  * ns-3 WifiAnalyzer 만들어서 linking 걸어주기
   * ns-3 time를 포함한 ppdu, psdu, mpdu header 및 payload 정보 analyzer에 넘기기
   * STA 개수 증가 또는 position의 변동과 같은 확장성을 고려한 각 method 별로 network 지표 자동 측정
   * 제안하는 재전송 방식도 구현할 수 있으면 할 예정
  
 * 그럼 코드 분석 해야겠지... 송수신간의 코드를 봅시다
 
-### 1. wifi-analyzer linking 걸어주기
+### 1. ns-3 WifiAnalyzer linking 걸어주기
 * './ns3.40/src/wifi/model/' 디렉토리 위치로 가면 wifi와 관련된 코드 파일 (.cc) 및 헤더 파일 (.h) 있음
 * 여기다가 wifi-analyzer.h랑 wifi-analyzer.cc 생성하고 print 테스트 함수 하나 만들어 주자, 코드는 다음과 같음
 
@@ -92,7 +91,7 @@ namespace ns3 {
   * set(source_files) -> model/wifi-analyzer.cc 추가
   * set(header_files) -> model/wifi-analyzer.h 추가
 
-### 2. ns-3 send 및 receive 동작 코드 분석
+### 2. ns-3 송신 및 수신 동작 코드 분석
 * 다 정리하기에는 시간이 부족함 그래서 일단 결론만 빠르게
   * wifi-phy.cc의 Send()와 StartPreambleReceive()에서 ns:Time을 찍으면 같은 시간이 나옴 (즉, phy entity 정보를 기반으로 duration 계산을 하지 않음)
   * 따라서, 수신 시간을 계산한 뒤의 코드에서 인자 값을 넘겨야 됨
@@ -185,19 +184,19 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
   * 조건 1: MPDU가 수신될 때
     * 실제 mpdu 전송에 대한 신호가 수신될 때, 전송된 데이터가 A-mpdu든 단일 mpdu든 상관 x
   * 조건 2: A-MPDU에 대한 수신이 완료 될 때
-    * ppdu의 preamble을 통해 전처리 된 Aggregation 정보를 기반으로 A-mpdu 전송이 완료 될 때, 전송된 데이터가 A-mpdu 인 경우
+    * psdu를 통해 전처리 된 Aggregation 정보를 기반으로 A-mpdu 전송이 완료 될 때, 전송된 데이터가 A-mpdu 인 경우
   * 따라서, 수신 정보를 실제 mpdu 전송에 대한 신호가 수신되는 조건에서 ns3-analyzer에 인자 값으로 전달해야됨
 
-### 3. ns3-analyzer implementaion
+### 3. ns-3 WifiAnalyzer implementaion
 * 일단 필요한 정보 리스트업 부터 (처음에는 psdu 자체를 넘기려다가, 그냥 wifi module에서 값을 처리하고 넘기기로 함)
-  * 현재 시간: Simulator::Now().As(Time::S)
-  * 함수가 호출된 device의 MAC 주소: m_self
-  * mpdu가 전송된 link 정보: m_linkId
-  * mpdu header에 포함된 송신 및 수신 MAC 주소: mpdu_header.GetAddr2() 및 mpdu_header.GetAddr1()
-  * payload size (ppdu의 payload 이니까, psdu size = mpdu size): mpdu->GetSize()
-  * mpdu의 seq #: mpdu_header->GetSeqeunceNumber()
-  * mpdu의 qos tid: mpdu_header->GetQosTid()
-  * mpdu의 재전송 여부: mpdu_header->IsRetry()
+  * 현재 시간: Simulator::Now().As(Time::S), (TimwWithUnit)
+  * 함수가 호출된 device의 MAC 주소: m_self, (Mac48Address)
+  * mpdu가 전송된 link 정보: m_linkId, (uint8_t)
+  * mpdu header에 포함된 송신 및 수신 MAC 주소: mpdu_header.GetAddr2() 및 mpdu_header.GetAddr1(), (Mac48Address)
+  * payload size (ppdu의 payload 이니까, psdu size = mpdu size): mpdu->GetSize(), (uint32_t)
+  * mpdu의 seq #: mpdu_header->GetSeqeunceNumber(), (uint16_t)
+  * mpdu의 qos tid: mpdu_header->GetQosTid(), (uint8_t)
+  * mpdu의 재전송 여부: mpdu_header->IsRetry(), (bool)
   * BA의 경우, BA 헤더 정보 
   * 일단 이정도, 필요하면 더 추가할 예정
     
@@ -216,7 +215,58 @@ for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
 }
 ```
 
-### 4. ns3-analyzer vs Wireshark
+### 4. ns-3 WifiAnalyzer vs Wireshark
+* ns-3 analyzer trace system에 대한 검증을 wireshark 기반 패킷 캡처된 정보를 기반으로 수행해볼까 함
+* 전송 로그 기준 - ns-3 WifiAnalyzer
+  * 1.10928s 시점에 STA1 -> AP seq # 0 ~ 6에 해당하는 A-mpdu 전송
+  * 1.10928s 시점에 STA2 -> AP seq # 465 ~ 475에 해당하는 A-mpdu 전송
+* 확인해야 점
+  * 같은 크기에 해당하는 aggregation이 수행되었는지 (STA 1: 7, STA 2: 11)
+  * 동시에 전송했기 때문에 손실이 발생했을 거고, 재전송 되었는지
+```
+⭐ STA 1 및 STA2의 전송 로그
+1. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 0	 QosTid: 5	 Retry: 0
+2. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 1	 QosTid: 5	 Retry: 0
+3. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 2	 QosTid: 5	 Retry: 0
+4. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 3	 QosTid: 5	 Retry: 0
+5. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 4	 QosTid: 5	 Retry: 0
+6. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 5	 QosTid: 5	 Retry: 0
+7. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 6	 QosTid: 5	 Retry: 0
+8. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 465	 QosTid: 3	 Retry: 0
+9. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 466	 QosTid: 3	 Retry: 0
+10. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 467	 QosTid: 3	 Retry: 0
+11. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 468	 QosTid: 3	 Retry: 0
+12. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 469	 QosTid: 3	 Retry: 0
+13. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 470	 QosTid: 3	 Retry: 0
+14. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 471	 QosTid: 3	 Retry: 0
+15. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 472	 QosTid: 3	 Retry: 0
+16. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 473	 QosTid: 3	 Retry: 0
+17. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 474	 QosTid: 3	 Retry: 0
+18. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 475	 QosTid: 3	 Retry: 0
+```
+
+* 전송 로그 기준 - Wireshark
+```
+⭐ STA1 입장, link 2
+1. Time: 1.060329s / Src: 192.168.1.2 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 0)
+2. Time: 1.060329s / Src: 192.168.1.2 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 1)
+...
+7. Time: 1.060329s / Src: 192.168.1.2 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 6)
+8. Time: 1.062054s / Src: 00:00:00:00:00:06 / Dst: 00:00:00:00:00:09 / length: 56 / Info: 802.11 Block Ack Req
+```
+* 같은 크기에 해당하는 aggregation이 수행된 걸 확인할 수 있음
+* 손실로 인해 BA Req frame 전송하는 거 확인할 수 있음
+* 그럼 STA2 로그도 한번 보자
+
+```
+⭐ STA2 입장, link 2
+1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 8)
+1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 9)
+...
+1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 11)
+9. Time: 0.963139s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:05 / length: 80 / Info: 802.11 Block Ack
+```
+
 
 ### 5. 뭔가 이상한 로그 (A-mpdu에 대한 실제 수신 동작)
 * ⭐ 로그가 특이하다
