@@ -309,7 +309,24 @@ n. Time: 0.956042s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 
 * 결론적으로, ns-3 WifiAnalyzer <-> Wireshark 간의 송수신 흐름은 같음
 
 ### 5. A-mpdu에 대한 실제 수신 동작 (⭐ 매우매우 중요)
-* 즉, 이렇게 되면 mpdu 1개가 BA Req frame 때문에 분할되어 재전송 되는건 성능상 굉장히 굉장히 마이너한 문제가 되버림
+* A-mpdu의 실제 수신 과정
+  * Each subframe (MPDU) is processed and received sequentially.
+  * A-MPDU is a frame composed of multiple MPDUs (MAC Protocol Data Units), and is structured in a format that can distinguish the start and end of the frame, so that the receiving device can identify each MPDU separately.
+  * When a signal is received at the PHY layer, A-MPDUs are received sequentially in MPDU units. Each MPDU is processed as an independent frame.
+  * This process also has the same meaning as sequential signal reception physically.
+* 정리하면, 수신기는 송신기가 A-mpdu를 송신하는지 mpdu를 송신하는지 알 수가 없음 (단순히, 물리적 신호를 받고 처리한다는 관점에서 생각하면 이해가 쉬움)
+* 그럼에도 불구하고, 송신은 동시에 발생하는 이유
+  * A-mpdu 송신도 실제로는 순차적으로 MPDU를 송신함
+  * A-mpdu 송신과 수신의 가장 큰 차이점은 **하나의 연속된 전송**으로 이루어 진다는 점 (그래서 시간이 동일함)
+  * 위의 ns-3 Analyzer 수신로그를 보면 시간에 따라 서로 다른 link에서 seq #가 섞여서 수신받는 것을 확인할 수 있음 (즉, 수신 과정은 하나의 연속된 수신을 보장할 수 없음)
+  * 대신 송신은 특정 link에서 발생하기 때문에, seq #가 순차적이지 않을 수가 없음 (MAC Queue의 seq # 할당이 순차적으로 이루어지지 않는 이상)
+  * 정리
+    * 송신 장치는 PHY 계층에서 MPDU를 aggregation하여 한 번의 연속된 전송으로 처리하지만, MPDU는 순차적으로 신호화되어 전송
+    * 수신 장치가 이 신호를 순차적으로 받아 MPDU 단위로 분리하여 처리하게 됨
+
+* (⭐ 중요!) 즉, 이렇게 되면 mpdu 1개가 BA Req frame 때문에 분할되어 재전송 되는건 성능상 굉장히 굉장히 마이너한 문제가 되버림
+
+### Summary
 * 다른게 필요함
 
 
