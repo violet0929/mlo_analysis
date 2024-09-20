@@ -179,7 +179,7 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
 }
 ```
 * HtFrameExchangeManager::ForwardPsduDown()와 다르게, FrameExchangeManager::Receive는 A-mpdu를 수신 받을 때 2번 호출됨
-  * (⭐ 매우 중요) 이러한 현상은 **실제로** A-mpdu가 수신되는 방식이 독특하기 때문임 -> 5. 뭔가 이상한 로그 (A-mpdu에 대한 실제 수신 동작) 참고
+  * (⭐ 매우 중요) 이러한 현상은 **실제로** A-mpdu가 수신되는 방식이 독특하기 때문임 -> 5. A-mpdu에 대한 실제 수신 동작 참고
   * Receive()가 호출되는 조건은 크게 2가지로 분류됨
   * 조건 1: MPDU가 수신될 때
     * 실제 mpdu 전송에 대한 신호가 수신될 때, 전송된 데이터가 A-mpdu든 단일 mpdu든 상관 x
@@ -217,12 +217,8 @@ for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
 
 ### 4. ns-3 WifiAnalyzer vs Wireshark
 * ns-3 analyzer trace system에 대한 검증을 wireshark 기반 패킷 캡처된 정보를 기반으로 수행해볼까 함
+
 * 전송 로그 기준 - ns-3 WifiAnalyzer
-  * 1.10928s 시점에 STA1 -> AP seq # 0 ~ 6에 해당하는 A-mpdu 전송
-  * 1.10928s 시점에 STA2 -> AP seq # 465 ~ 475에 해당하는 A-mpdu 전송
-* 확인해야 점
-  * 같은 크기에 해당하는 aggregation이 수행되었는지 (STA 1: 7, STA 2: 11)
-  * 동시에 전송했기 때문에 손실이 발생했을 거고, 재전송 되었는지
 ```
 ⭐ STA 1 및 STA2의 전송 로그
 1. Time: +1.10928s	 STA 1 send MPDU, link Id: 1	 Seq #: 0	 QosTid: 5	 Retry: 0
@@ -244,6 +240,11 @@ for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
 17. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 474	 QosTid: 3	 Retry: 0
 18. Time: +1.10928s	 STA 2 send MPDU, link Id: 1	 Seq #: 475	 QosTid: 3	 Retry: 0
 ```
+* 1.10928s 시점에 STA1 -> AP seq # 0 ~ 6에 해당하는 A-mpdu 전송
+* 1.10928s 시점에 STA2 -> AP seq # 465 ~ 475에 해당하는 A-mpdu 전송
+* 확인해야 점
+  * 같은 크기에 해당하는 aggregation이 수행되었는지 (STA 1: 7, STA 2: 11)
+  * 동시에 전송했기 때문에 손실이 발생했을 거고, 재전송 되었는지
 
 * 전송 로그 기준 - Wireshark
 ```
@@ -255,19 +256,60 @@ for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
 8. Time: 1.062054s / Src: 00:00:00:00:00:06 / Dst: 00:00:00:00:00:09 / length: 56 / Info: 802.11 Block Ack Req
 ```
 * 같은 크기에 해당하는 aggregation이 수행된 걸 확인할 수 있음
-* 손실로 인해 BA Req frame 전송하는 거 확인할 수 있음
+* 마지막에 찍힌 BA Req frame은 STA2에서 전송한 frame임
 * 그럼 STA2 로그도 한번 보자
 
 ```
 ⭐ STA2 입장, link 2
-1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 8)
-1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 9)
+1. Time: 1.060329s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 465)
+2. Time: 1.060329s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 466)
 ...
-1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 11)
-9. Time: 0.963139s / Src: 00:00:00:00:00:08 / Dst: 00:00:00:00:00:05 / length: 80 / Info: 802.11 Block Ack
+3. Time: 1.060329s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 475)
+n. Time: 1.061992s / Src: 00:00:00:00:00:06 / Dst: 00:00:00:00:00:09 / length: 80 / Info: 802.11 Block Ack Req
+```
+* 전송 시간이 동일하다? (즉, 시간 동기화가 맞다, 안맞을 줄 알았는데..)
+  * STA 간의 동기화는 맞는거 같지만, AP와의 동기화는 안 맞음
+  * 아무튼 실제 정확한 전송 및 수신 시간이 필요하니까 wireshark를 기반으로 지표를 측정하지는 않을 예정
+
+* 수신 로그 기준 - ns-3 WifiAnalyzer
+```
+⭐ AP 입장, link1 및 link 2
+Time: +1.00367s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 0	 QosTid: 5	 Retry: 0
+Time: +1.0038s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 1	 QosTid: 5	 Retry: 0
+Time: +1.00394s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 2	 QosTid: 5	 Retry: 0
+Time: +1.00408s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 3	 QosTid: 5	 Retry: 0
+Time: +1.00411s	 AP receive mpdu from STA 2, link Id: 0	 Seq #: 8	 QosTid: 5	 Retry: 0
+Time: +1.00422s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 4	 QosTid: 5	 Retry: 0
+Time: +1.00425s	 AP receive mpdu from STA 2, link Id: 0	 Seq #: 9	 QosTid: 5	 Retry: 0
+Time: +1.00435s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 5	 QosTid: 5	 Retry: 0
+Time: +1.00438s	 AP receive mpdu from STA 2, link Id: 0	 Seq #: 10	 QosTid: 5	 Retry: 0
+Time: +1.00449s	 AP receive mpdu from STA 2, link Id: 1	 Seq #: 6	 QosTid: 5	 Retry: 0
+Time: +1.00454s	 AP receive mpdu from STA 2, link Id: 0	 Seq #: 11	 QosTid: 5	 Retry: 0
 ```
 
+* 수신 로그 기준 - Wireshark
+```
+⭐ AP 입장, link1
+1. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 8)
+2. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 9)
+3. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 10)
+4. Time: 0.963129s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 11)
+```
 
-### 5. 뭔가 이상한 로그 (A-mpdu에 대한 실제 수신 동작)
-* ⭐ 로그가 특이하다
+```
+⭐ AP 입장, link2
+1. Time: 0.956042s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 0)
+2. Time: 0.956042s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 1)
+...
+n. Time: 0.956042s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 49153 -> 9 Len = 1400 (Seq #: 7)
+```
+
+* (⭐ 중요) Wireshark는 같은 시점에 A-mpdu를 수신받았는데, ns-3 WifiAnalyzer의 수신 시간은 뭔가 이상하다 -> 5. A-mpdu에 대한 실제 수신 동작 참고
+* 아무튼 STA2로 부터 전송된 seq # 0 ~ 7은 link2를 통해 수신받고, seq # 8 ~ 11은 link1을 통해 수신 받음
+* 결론적으로, ns-3 WifiAnalyzer <-> Wireshark 간의 송수신 흐름은 같음
+
+### 5. A-mpdu에 대한 실제 수신 동작 (⭐ 매우매우 중요)
+* 즉, 이렇게 되면 mpdu 1개가 BA Req frame 때문에 분할되어 재전송 되는건 성능상 굉장히 굉장히 마이너한 문제가 되버림
+* 다른게 필요함
+
 
