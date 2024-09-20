@@ -192,6 +192,7 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
 * 일단 필요한 정보 리스트업 부터 (처음에는 psdu 자체를 넘기려다가, 그냥 wifi module에서 값을 처리하고 넘기기로 함)
   * 현재 시간: Simulator::Now().As(Time::S)
   * 함수가 호출된 device의 MAC 주소: m_self
+  * mpdu가 전송된 link 정보: m_linkId
   * mpdu header에 포함된 송신 및 수신 MAC 주소: mpdu_header.GetAddr2() 및 mpdu_header.GetAddr1()
   * payload size (ppdu의 payload 이니까, psdu size = mpdu size): mpdu->GetSize()
   * mpdu의 seq #: mpdu_header->GetSeqeunceNumber()
