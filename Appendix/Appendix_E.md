@@ -206,7 +206,7 @@ auto ptr = psdu->begin();
 for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
   auto mpdu_header = ptr[i]->GetHeader();
   if (ptr[i]->GetSize() > 1400) {
-  wifiAnalyzer.PrintReceive(Simulator::Now().As(Time::S), m_self, m_linkId,
+  wifiAnalyzer.Receive(Simulator::Now().As(Time::S), m_self, m_linkId,
                             mpdu_header.GetAddr2(),
                             mpdu_header.GetAddr1(), ptr[i]->GetSize(),
                             mpdu_header.GetSequenceNumber(),
