@@ -12,12 +12,12 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * [References](#references)
 
 ## Overview
-* ns3 기반 asynchronous multi-link operation with EDCA의 동작 및 코드 분석은 [여기](https://github.com/violet0929/mlo_analysis/tree/main/ns3-analyzer/code_analysis)를 확인해주세요
+* ns3 기반 asynchronous multi-link operation with EDCA의 동작 및 코드 분석은 [여기](https://github.com/violet0929/mlo_analysis/tree/main/Appendix)를 확인해주세요
   * A. [AC_BE Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_A.md)
-  * B. [AC_VI Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_B.md)
-  * C. [Block ACK Request](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_C.md)
-  * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_D.md)
-  * E. [Latency](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_E.md)
+  * B. [AC_VI Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/Appendix/Appendix_B.md)
+  * C. [Block ACK Request](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/Appendix/Appendix_C.md)
+  * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/Appendix/Appendix_D.md)
+  * E. [Latency](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/Appendix/Appendix_E.md)
 * 3 tasks are classified and performed sequentially as described in the below
   * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
   * Task 2: 특정 재전송 상황에서의 문제점 분석 및 해결 방안 제안
