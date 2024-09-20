@@ -13,7 +13,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ## Overview
 * ns3 기반 asynchronous multi-link operation with EDCA의 동작 및 코드 분석은 [여기](https://github.com/violet0929/mlo_analysis/tree/main/ns3-analyzer/code_analysis)를 확인해주세요
-  * A. [AC_BE Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_A.md)
+  * A. [AC_BE Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_A.md)
   * B. [AC_VI Retransmission](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_B.md)
   * C. [Block ACK Request](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_C.md)
   * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/ns3-analyzer/code_analysis/Appendix_D.md)
