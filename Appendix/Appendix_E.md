@@ -151,7 +151,7 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
 
     if (addr1.IsGroup() || addr1 == m_self) {
         // receive broadcast frames or frames addressed to us only
-        if (psdu->GetNMpdus() == 1) {
+        if (psdu->GetNMpdus() == 1) { // 여기 중요!!
             // if perMpduStatus is not empty (i.e., this MPDU is not included in an A-MPDU)
             // then it must contain a single value which must be true (i.e., the MPDU
             // has been correctly received)
@@ -179,20 +179,44 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
     }
 }
 ```
-* 여기 노트 하나 들어가야됨 (receive function 설명 필요)
+* HtFrameExchangeManager::ForwardPsduDown()와 다르게, FrameExchangeManager::Receive는 A-mpdu를 수신 받을 때 2번 호출됨
+  * (⭐ 매우 중요) 이러한 현상은 **실제로** A-mpdu가 수신되는 방식이 독특하기 때문임 -> 5. 뭔가 이상한 로그 (A-mpdu에 대한 실제 수신 동작) 참고
+  * Receive()가 호출되는 조건은 크게 2가지로 분류됨
+  * 조건 1: MPDU가 수신될 때
+    * 실제 mpdu 전송에 대한 신호가 수신될 때, 전송된 데이터가 A-mpdu든 단일 mpdu든 상관 x
+  * 조건 2: A-MPDU에 대한 수신이 완료 될 때
+    * ppdu의 preamble을 통해 전처리 된 Aggregation 정보를 기반으로 A-mpdu 전송이 완료 될 때, 전송된 데이터가 A-mpdu 인 경우
+  * 따라서, 수신 정보를 실제 mpdu 전송에 대한 신호가 수신되는 조건에서 ns3-analyzer에 인자 값으로 전달해야됨
 
 ### 3. ns3-analyzer implementaion
-* 일단 필요한 정보 리스트업 부터
-  * 시간
-  * 함수가 호출된 device의 MAC 주소
-  * mpdu header에 포함된 송신 및 수신 MAC 주소
-  * payload size (ppdu의 payload 이니까, psdu size = mpdu size)
-  * mpdu의 seq #
-  * BA의 경우, BA 헤더 정보
+* 일단 필요한 정보 리스트업 부터 (처음에는 psdu 자체를 넘기려다가, 그냥 wifi module에서 값을 처리하고 넘기기로 함)
+  * 현재 시간: Simulator::Now().As(Time::S)
+  * 함수가 호출된 device의 MAC 주소: m_self
+  * mpdu header에 포함된 송신 및 수신 MAC 주소: mpdu_header.GetAddr2() 및 mpdu_header.GetAddr1()
+  * payload size (ppdu의 payload 이니까, psdu size = mpdu size): mpdu->GetSize()
+  * mpdu의 seq #: mpdu_header->GetSeqeunceNumber()
+  * mpdu의 qos tid: mpdu_header->GetQosTid()
+  * mpdu의 재전송 여부: mpdu_header->IsRetry()
+  * BA의 경우, BA 헤더 정보 
   * 일단 이정도, 필요하면 더 추가할 예정
+    
+```c
+WifiAnalyzer wifiAnalyzer;
+auto ptr = psdu->begin();
+for (int i = 0; i < (int) psdu->GetNMpdus(); i++) {
+  auto mpdu_header = ptr[i]->GetHeader();
+  if (ptr[i]->GetSize() > 1400) {
+  wifiAnalyzer.PrintReceive(Simulator::Now().As(Time::S), m_self, m_linkId,
+                            mpdu_header.GetAddr2(),
+                            mpdu_header.GetAddr1(), ptr[i]->GetSize(),
+                            mpdu_header.GetSequenceNumber(),
+                            mpdu_header.GetQosTid(), mpdu_header.IsRetry());
+  }
+}
+```
 
 ### 4. ns3-analyzer vs Wireshark
 
-### 5. 뭔가 이상한 로그 (수신을 동시에 받지 않음)
+### 5. 뭔가 이상한 로그 (A-mpdu에 대한 실제 수신 동작)
 * ⭐ 로그가 특이하다
 
