@@ -179,13 +179,12 @@ FrameExchangeManager::Receive(Ptr<const WifiPsdu> psdu,
 }
 ```
 * HtFrameExchangeManager::ForwardPsduDown()와 다르게, FrameExchangeManager::Receive는 A-mpdu를 수신 받을 때 2번 호출됨
+  * 단일 mpdu를 수신 받을 때는 한 번만 호출되며, A-mpdu를 수신 받을 때 호출되는 조건은 아래와 같음
+  * 첫 번째 호출: 실제 A-mpdu에 포함된 mpdu가 수신될 때
+  * 두 번째 호출: A-mpdu에 대한 수신이 완료 될 때 (psdu를 통해 전처리 된 Aggregation 정보를 가지고 있음)
   * (⭐ 매우 중요) 이러한 현상은 **실제로** A-mpdu가 수신되는 방식이 독특하기 때문임 -> 5. A-mpdu에 대한 실제 수신 동작 참고
-  * Receive()가 호출되는 조건은 크게 2가지로 분류됨
-  * 조건 1: MPDU가 수신될 때
-    * 실제 mpdu 전송에 대한 신호가 수신될 때, 전송된 데이터가 A-mpdu든 단일 mpdu든 상관 x
-  * 조건 2: A-MPDU에 대한 수신이 완료 될 때
-    * psdu를 통해 전처리 된 Aggregation 정보를 기반으로 A-mpdu 전송이 완료 될 때, 전송된 데이터가 A-mpdu 인 경우
-  * 따라서, 수신 정보를 실제 mpdu 전송에 대한 신호가 수신되는 조건에서 ns3-analyzer에 인자 값으로 전달해야됨
+  * 따라서, 수신 정보를 실제 mpdu 전송에 대한 신호가 수신되는 조건에서 ns3-analyzer에 인자 값으로 전달해야 됨
+  
 
 ### 3. ns-3 WifiAnalyzer implementaion
 * 일단 필요한 정보 리스트업 부터 (처음에는 psdu 자체를 넘기려다가, 그냥 wifi module에서 값을 처리하고 넘기기로 함)
