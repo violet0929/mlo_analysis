@@ -128,10 +128,21 @@ HtFrameExchangeManager::ForwardPsduDown(Ptr<const WifiPsdu> psdu, WifiTxVector& 
 <p align="center">  
   <img src="https://github.com/user-attachments/assets/2910627d-332c-440f-aecf-c09c6a04bad3" width="40%">  
 </p>
+
+* 중요한 function 
+  * ns3::FrameExchangeManager::Receive
+  * ns3::MacRxMiddle::Receive
+  * ns3::ApWifiMac::Receive
+  * ns3::WifiMac::ForwardUp
+  * ns3::WifiNetDevice::ForwardUp
       
-    * ACK Scheduling
-      * 단일 mpdu의 경우, ReceiveMpdu 호출 후 NA schedule
-      * A-mpdu의 경우, EndReceiveAmpdu 호출 후 BA schedule
+* ACK는 별도 event로서 따로 scheduling 해줌
+  * ns3::FrameExchangeManager::Receive에서
+  * 단일 mpdu의 경우, ReceiveMpdu 호출 후 NA schedule
+  * A-mpdu의 경우, EndReceiveAmpdu 호출 후 BA schedule
+
+* A-mpdu에 포함된 mpdu가 도착할 경우, A-mpdu가 완성될 때까지 LLC layer로 forwarding을 대기하지 않음 (⭐ 매우 중요)
+* 즉, mpdu가 도착하는대로 상위 계층으로 forwarding 해줌
 
 ```c
 void
