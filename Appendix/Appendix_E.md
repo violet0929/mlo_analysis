@@ -337,7 +337,8 @@ n. Time: 0.956042s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 
   * 수신 장치가 이 신호를 순차적으로 받아 MPDU 단위로 분리하여 처리하게 됨
 
 ### Summary
-* 갔다와서 요약 정리하고, BA frame 날리는거 구현하고 (BA header 거는 조건이 있을거임), 그림 4가지 그리고
-* 가서 생각할건, 빠른 회복 기법이 있을건지 생각해보고, mpdu 하나가 BA req로 인해 latency가 얼마나 늦게 찍히는지 확인해보고 영향력 생각해보는거 까지~
+* A-mpdu에 포함된 mpdu가 도착할 경우, A-mpdu가 완성될 때까지 LLC layer로 forwarding을 대기하지 않고 바로 올려보냄
+* A-mpdu의 실제 수신 과정은 각각의 mpdu가 순차적으로 처리되며, A-mpdu가 동시에 처리되는 것이 아님
+* 따라서, multi-link operation 환경에서 wlan seq #의 out-of-order 현상이 발생할 가능성이 높음
 
 
