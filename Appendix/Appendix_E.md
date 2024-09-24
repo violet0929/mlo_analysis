@@ -124,12 +124,14 @@ HtFrameExchangeManager::ForwardPsduDown(Ptr<const WifiPsdu> psdu, WifiTxVector& 
 * 수신 과정은 다음과 같음
   * ns3::WifiPhy::StartPreambleReceive에서 Preamble 정보를 기반으로 특정 시간에 receive event가 invoke되도록 설정해 줌
   * 그리고 receive event가 invoke되면 예외 없이 아래의 호출 순서를 따름
-    * ns3::PhyEntity::DoEndReceivePayload
-    * ns3::PhyEntity::RxPayloadSucceeded
-    * ns3::WifiPhyStateHelper::NotifyRxPsduSucceeded
-    * ns3::Callback::operator()
-    * ns3::CallbackImpl::operator()
-    * ns3::FrameExchangeManager::Receive
+
+<p align="center">  
+  <img src="https://github.com/user-attachments/assets/2910627d-332c-440f-aecf-c09c6a04bad3" width="40%">  
+</p>
+      
+    * ACK Scheduling
+      * 단일 mpdu의 경우, ReceiveMpdu 호출 후 NA schedule
+      * A-mpdu의 경우, EndReceiveAmpdu 호출 후 BA schedule
 
 ```c
 void
