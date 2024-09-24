@@ -339,6 +339,6 @@ n. Time: 0.956042s / Src: 192.168.1.3 / Dst: 192.168.1.1 / length: 1500 / Info: 
 ### Summary
 * A-mpdu에 포함된 mpdu가 도착할 경우, A-mpdu가 완성될 때까지 LLC layer로 forwarding을 대기하지 않고 바로 올려보냄
 * A-mpdu의 실제 수신 과정은 각각의 mpdu가 순차적으로 처리되며, A-mpdu가 동시에 처리되는 것이 아님
-* 따라서, multi-link operation 환경에서 wlan seq #의 out-of-order 현상이 발생할 가능성이 높음
+* 따라서, multi-link operation 환경에서 wlan seq #의 out-of-order 현상이 발생할 가능성이 높음 (Appendix F. 참고)
 
 
