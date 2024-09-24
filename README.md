@@ -54,7 +54,47 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 
 ## References
+* A Comparison of Neural Networks for Wireless Channel Prediction
+  * IEEE Wireless Communications, 2024
 
+* Is Multi-Link Operation of 802.11be TCP Friendly? Analysis and Solution
+  * IFIP Networking Conference, 2024
+ 
+* IEEE 802.11 be Wi-Fi 7: New challenges and opportunities
+  * IEEE Communications Surveys & Tutorials, 2020
+
+* Current status and directions of IEEE 802.11 be, the future Wi-Fi 7
+  * IEEE Access 8, 2020
+ 
+* Multi-link operation with Enhanced Synchronous Channel Access in IEEE 802.11be Wireless LANs: Coexistence Issue and Solutions
+  * Sensors, 2021
+ 
+* Performance and coexistence evaluation of IEEE 802.11 be multi-link operation
+  * IEEE Wireless Communications and Networking Conference, 2023
+ 
+* Multilink operation in IEEE 802.11 be wireless LANs: Backoff overflow problem and solutions
+  * Sensors, 2022
+ 
+* Latency Impact for Massive Real-Time Applications on Multi Link Operation
+  * IEEE Region 10 Symposium, 2021
+ 
+* A Load Adaptive IEEE 802.11e EDCA Backoff Scheme with Enhanced Service Differentiation
+  * IEEE 12th International Conference on Communication Technology, 2010
+ 
+* Analytical Study of the IEEE 802.11p EDCA Mechanism
+  * IEEE Intelligent Vehicles Symposium, 2013
+ 
+* Adaptive Backoff Algorithm for EDCA in the IEEE 802.11p protocol
+  * International Wireless Communications and Mobile Computing Conference, 2016
+ 
+* IEEE 802.11 ax: Highly efficient WLANs for intelligent information infrastructure
+  * IEEE Communications Magazine, 2017
+ 
+* A review of OFDMA and Single-Carrier FDMA
+  * European Wireless Conference, 2010
+ 
+* Spatial Reuse in IEEE 802.11ax WLANs
+  * Computer Communications, 2021
 
   
 
