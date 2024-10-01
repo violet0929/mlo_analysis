@@ -50,6 +50,17 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * Case 2.1: 재전송되는 패킷이 내부 EDCA contention 에서 승리하여 즉시 전송되는 경우
   * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
 
+
+## Evaluation
+* Evaluation 1. latency
+  * Avg latency: 전체 mpdu에 대해 지연 시간에 대해 평균에 해당하는 시간
+  * 95th latency: 전체 mpdu에 대해 지연 시간에 대해 95번째 백분위 수에 해당하는 시간
+  * 99th latency: 전체 mpdu에 대해 지연 시간에 대해 99번째 백분위 수에 해당하는 시간
+
+  * 전체 mpdu 개수: N, 백분위수: P라 가정하면 인덱스 i는 다음과 같음 (i = P / 100 * (N - 1)) 
+  * 이후 linear interpolation을 통해 값 도출
+
+  
 ## Supplementary
 
 
