@@ -18,13 +18,16 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * C. [Block ACK Request](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_C.md)
   * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_D.md)
   * E. [Latency](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_E.md)
-* 3 tasks are classified and performed sequentially as described in the below
-  * Task 1: IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
-  * Task 2: 특정 재전송 상황에서의 문제점 분석 및 해결 방안 제안
-  * Task 3: 3 가지 관점에서의 성능 분석
-    * 관점 1: 기존 재전송 방식 vs 제안하는 재전송 방식
-    * 관점 2: 특정 Buffer size에 기반한 네트워크 성능
-    * 관점 2: 여러 AC이 공존하는 상황에서 STA 수에 기반한 네트워크 성능
+ 
+* IEEE 802.11be multi-link operation -> EHT 및 low latency 지원 (latency portion에 대한 reference 존재)
+* 그럼에도 불구하고, EDCA를 기반으로 한 MLO 환경에서 worst case latency가 측정되는 상황 발견
+* 따라서, worst case latency가 측정되는 시나리오 기반 설명
+  * EDCA + Asynchronous MLO의 channel access
+  * 같은 link를 통해 재전송되는 경우
+  * 다른 link를 통해 재전송되는 경우
+  * 상위 AC를 가지는 트래픽이 하위 AC의 트래픽에 의해 지연되는 경우
+* 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안
+* 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
 
 ## Package
 * Ubuntu: 22.04
