@@ -19,16 +19,34 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_D.md)
   * E. [Latency](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_E.md)
 
+### Introduction
 * IEEE 802.11be multi-link operation -> EHT 및 low latency 지원 (latency portion에 대한 reference 존재)
-* 그럼에도 불구하고, EDCA를 기반으로 한 MLO 환경에서 worst case latency가 측정되는 상황 발견
-* 따라서, worst case latency가 측정되는 시나리오 기반 설명
-  * EDCA + Asynchronous MLO의 channel access
-  * 같은 link를 통해 재전송되는 경우
-  * 다른 link를 통해 재전송되는 경우
-  * 상위 AC를 가지는 트래픽이 하위 AC의 트래픽에 의해 지연되는 경우
-* 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안 + Compensation (optional), (flow chart 추가해야됨)
-* 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
+* 그럼에도 불구하고, EDCA를 기반으로 한 MLO 환경에서도 여전히 worst-case latency가 존재함
+* 따라서, EDCA를 기반으로 한 MLO 환경 기반 worst case latency를 줄일 수 있는 방안 제안
 
+### Background
+* EDCA
+* MLO architecture
+* EDCA + Asynchronous MLO 환경에서의 channel access
+
+### Understanding the process by which worst-case latency is derived in asynchronous multi-link operation with EDCA
+* 따라서, worst case latency가 측정되는 시나리오 기반 설명
+  * (재전송 이슈)
+    * 같은 link를 통해 재전송되는 경우
+    * 다른 link를 통해 재전송되는 경우
+  * (내부 경쟁 이슈)
+    * 상위 AC를 가지는 트래픽이 하위 AC의 트래픽에 의해 지연되는 경우
+
+### Adaptive TXOP
+* 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안
+* Compensation (optional)
+* flow chart 추가
+
+### Evaluation
+* 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
+  * 2.4GHz 20MHz + 5GHz 80MHz -> simulation time 10sec <- (예외 처리가 심각함)
+  * 5GHz 80MHz + 6GHz 80MHz -> simulation time 5sec
+ 
 ## Package
 * Ubuntu: 22.04
 * ns-3: 3.40
