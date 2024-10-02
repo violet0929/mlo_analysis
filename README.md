@@ -18,7 +18,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * C. [Block ACK Request](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_C.md)
   * D. [MPDU Buffer Size](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_D.md)
   * E. [Latency](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_E.md)
- 
+
 * IEEE 802.11be multi-link operation -> EHT 및 low latency 지원 (latency portion에 대한 reference 존재)
 * 그럼에도 불구하고, EDCA를 기반으로 한 MLO 환경에서 worst case latency가 측정되는 상황 발견
 * 따라서, worst case latency가 측정되는 시나리오 기반 설명
@@ -26,7 +26,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 같은 link를 통해 재전송되는 경우
   * 다른 link를 통해 재전송되는 경우
   * 상위 AC를 가지는 트래픽이 하위 AC의 트래픽에 의해 지연되는 경우
-* 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안
+* 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안 + Compensation (optional), (flow chart 추가해야됨)
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
 
 ## Package
