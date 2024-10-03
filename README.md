@@ -39,7 +39,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ### Adaptive TXOP
 * 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안
-* Compensation (optional) <- 반드시 필요함
+* Compensation (optionalx) <- 반드시 필요함
 * flow chart 추가
 
 ### Evaluation
