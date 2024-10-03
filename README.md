@@ -39,13 +39,15 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ### Adaptive TXOP
 * 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안
-* Compensation (optional)
+* Compensation (optional) <- 반드시 필요함
 * flow chart 추가
 
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
   * 2.4GHz 20MHz + 5GHz 80MHz -> simulation time 10sec <- (예외 처리가 심각함)
   * 5GHz 80MHz + 6GHz 80MHz -> simulation time 5sec
+ 
+  * retry가 왜 늘었는가?
  
 ## Package
 * Ubuntu: 22.04
