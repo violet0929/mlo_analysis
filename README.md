@@ -64,7 +64,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
-  * 2.4GHz 20MHz + 5GHz 20MHz -> simulation time 10sec <- (예외 처리가 심각함)
+  * 2.4GHz 20MHz + 5GHz 20MHz -> simulation time 10sec
   * 5GHz 80MHz + 6GHz 80MHz -> simulation time 5sec
  
   * retry가 왜 늘었는가?
@@ -153,5 +153,18 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * Multi-Link Operation in IEEE802. 11be Extremely High Throughput: A Survey
   * IEEE Access, 2024
 
+## Note
+* Adaptive TXOP가 말이 안되는 이유
+  * 그러니까, 완벽한 논문이라는게 존재할 수 있을까?
+  * 좁은 대역 채널에서는 성립할 수 있음 (획득한 단일 TXOP에 대해 단일 A-mpdu 전송이 발생하기 때문)
+  * 넓은 대역 채널에서는 성립할 수 없음 (획득한 단일 TXOP에 대해 여러번의 A-mpdu 전송이 발생하기 때문)
+  * 즉, 좁은 대역에서는 마지막 seq#에 해당하는 mpdu가 분할되어 재전송되었지만, 넓은 대역에서는 분할되어 재전송되지 않음
+  * 따라서, 의미가 없음 -> 그럼 좁은 대역에서만 발생하는 문제라고 하고 논문을 쓸 것인가? -> 이건 좀 아닌듯...
+  * 물론, 실제로 multi-link operation이 20MHz 채널 사용할 수 있음 (그러나, 표준 자체가 EHT 및 6GHz 대역을 통한 광대역 통신을 지원하는데 20MHz??)
 
-
+* 방법론을 틀어야함
+  * 좁은 대역이든 넓은 대역이든 다 적용이 가능한 방법론이 필요함
+  * IEEE 802.11be 표준이 worst-case latency를 줄이는데에 초점이 맞춰진 기술임
+  * 따라서, worst-case latency를 포기하고 싶은 생각은 없음
+  * 고민을 많이 해봐도 선제적인 대응이 아니면서, 이미 손실이 발생한 mpdu의 latency를 줄일 수 있는 방법 같은게 있을까? primary link traffic allocation 말고는 없는듯.. 
+  * 그래서 그냥 multi-link operation with EDCA에서, traffic allocation을 제안하는게 낫지 않나...
