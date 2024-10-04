@@ -21,30 +21,50 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ### Introduction
 * IEEE 802.11be multi-link operation -> EHT 및 low latency 지원 (latency portion에 대한 reference 존재)
-* 그럼에도 불구하고, EDCA를 기반으로 한 MLO 환경에서도 여전히 worst-case latency가 존재함
-* 따라서, EDCA를 기반으로 한 MLO 환경 기반 worst case latency를 줄일 수 있는 방안 제안
+* 그럼에도 불구하고, 특정 채널 환경에서 worst-case latency가 측정되는 mpdu가 존재함
+* 따라서, 해당 mpdu의 latency를 줄일 수 있는 방법론을 제안
 
 ### Background
 * EDCA
+  * EDCA parameter 설명 들어가야함
 * MLO architecture
-* EDCA + Asynchronous MLO 환경에서의 channel access
+  * 기본 구조 설명 들어가야함
+* Channel Access in Asynchronous multi-link operation with EDCA
+  * 대역 간 간격이 충분하다 설명 들어가야함
+  * STR 모드 언급해야함
+  * 특징 언급해야함
+  * 이에 따라서, 상위 AC 및 하위 AC에 해당하는 트래픽이 서로 다른 링크를 통해 전송될 수 있음
 
-### Understanding the process by which worst-case latency is derived in asynchronous multi-link operation with EDCA
+### 비동기적 multi-link operation에서 상위 AC에 해당하는 mpdu의 worst case latency가 측정되는 원인 분석
 * 따라서, worst case latency가 측정되는 시나리오 기반 설명
   * (재전송 이슈)
-    * 같은 link를 통해 재전송되는 경우
-    * 다른 link를 통해 재전송되는 경우
+    * BA req 및 BA을 수신 받고 재전송된 mpdu가 한번 더 손실이 발생했을 때
   * (내부 경쟁 이슈)
-    * 상위 AC를 가지는 트래픽이 하위 AC의 트래픽에 의해 지연되는 경우
+    * 상위 AC를 가지는 트래픽이 하위 AC의 트래픽에 의해 추가 전송 지연시간이 발생했을 때
 
-### Adaptive TXOP
-* 결론적으로 해결할 수 있는 방안인 Adaptive TXOP 제안
-* Compensation (optionalx) <- 반드시 필요함
-* flow chart 추가
+### 특정 link를 primary channel로 사용할 수 있도록 하는 방법
+* 핵심은 하위 AC에 해당하는 트래픽을 일시적으로 block
+* 따라서, 상위 AC에 해당하는 트래픽이 EDCA 내부 경쟁없이 채널을 독점적으로 사용할 수 있음
+
+* (⭐ 중요) 독점 state를 언제 invoke하고 release 할 것인가
+  * invoke: 상위 AC에 해당하는 mpdu가 손실 발생하고, 송신된 BA Req에 대한 BA이 수신되었을 때 invoke
+    * 논란의 여지가 없음
+    * 구현 가능
+  * release: 이전에 손실된 mpdu가 성공적으로 재전송 되었으며, 이에 대한 BA이 수신되었을 때 release
+    * 재전송에 성공하고 release를 하면, originator 입장에서는 recipient가 성공적으로 수신했는지 알 수 없음
+    * 따라서, BA을 수신받고 release 처리를 수행하는게 맞음
+    * 구현은 어떻게 할 건가??
+
+* (⭐중요) 부차적인 문제
+  * 공정성 문제: 하위 AC 트래픽이 block 되었을 때, 얼마만큼의 네트워크 손실이 발생하는가 (처리량, 지연 등...)
+    * primary channel로 인한 이득과 손실에 대한 trade-off 관계를 논리적으로 잘 풀어야 함
+      
+  * 100% 신뢰성을 보장할 수 없음: 여전히 다른 STA의 전송으로 인한 간섭을 막을 수 없음
+    * 작은 control mpdu를 통해 동기화 과정이 가능은 하지만, 실제 상황에서 동작하기 매우 어려움 (모든 device가 해당 패킷을 인지해야하는 문제도 있음)
 
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
-  * 2.4GHz 20MHz + 5GHz 80MHz -> simulation time 10sec <- (예외 처리가 심각함)
+  * 2.4GHz 20MHz + 5GHz 20MHz -> simulation time 10sec <- (예외 처리가 심각함)
   * 5GHz 80MHz + 6GHz 80MHz -> simulation time 5sec
  
   * retry가 왜 늘었는가?
