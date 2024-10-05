@@ -20,12 +20,18 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * E. [Latency](https://github.com/violet0929/mlo_analysis/blob/main/Appendix/Appendix_E.md)
 
 ### Introduction
-* IEEE 802.11be multi-link operation -> EHT 및 low latency 지원 (latency portion에 대한 reference 존재)
-* 비동기적 다중 링크 동작 환경은 단일 링크 동작 환경에 비해 재전송에 대한 복구 속도가 빠르기 때문에 지연 시간을 줄이는 것이 가능함
-* 그럼에도 여전히, worst-case latency는 존재하며, 특히 EDCA 채널 접근 기법을 활용했을 때 상위 AC에 해당하는 데이터는 해당 지연 시간이 critical issue로 존재함
-  * critical issue의 논리적인 근거는??
-* 따라서, Asynchronous multi-link operation with EDCA 환경에서, 상위 AC에 해당하는 트래픽의 latency를 줄일 수 있도록 하는 기법을 제안
+* IEEE 802.11be 표준에서의 multi-link operation 기법은 초고처리량 (i.e., EHT) 및 저지연 (i.e., low latency)에 초점을 맞춤
+  * latency portion
+* 동시 송수신 (i.e., STR mode)이 가능한 비동기적 다중 링크 동작 환경은 단일 링크 동작 환경에 비해 재전송에 대한 복구 속도가 빠르기 때문에 지연 시간을 줄이는 것이 가능함
+  * 논리적인 근거는?? MLD와 connection 되어 있는 여러 링크를 통해 TXOP를 획득하고 전송을 할 수 있기 때문
+* 그럼에도 여전히 worst-case latency는 존재하며, 특히 EDCA 채널 접근 기법을 활용했을 때 상위 AC에 해당하는 데이터에 대해 측정된 높은 지연 시간은 지연에 민감한 AR/VR 및 real-time 특성을 갖는 트래픽에 대해 critical issue로 동작할 수 있음
+* 따라서, Asynchronous multi-link operation with EDCA 환경에서, 상위 AC에 해당하는 트래픽의 latency를 줄일 수 있도록 하는 traffic allocation 방법론을 제안
 
+### Related Works
+* IEEE 802.11be multi-link operation 환경에서 dynamic traffic allocation을 하기 위한 다양한 방법들이 존재함 [Reference](https://arxiv.org/pdf/2202.12614)
+  * Single Link Less Congested Interface (SLCI)
+  * Multi Link Congestion-aware Load balancing at flow arrivals (MCAA)
+  
 ### Background
 * EDCA
   * EDCA parameter 설명 들어가야함
