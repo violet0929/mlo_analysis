@@ -21,8 +21,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 ### Introduction
 * IEEE 802.11be multi-link operation -> EHT 및 low latency 지원 (latency portion에 대한 reference 존재)
-* 그럼에도 불구하고, 특정 채널 환경에서 worst-case latency가 측정되는 mpdu가 존재함
-* 따라서, 해당 mpdu의 latency를 줄일 수 있는 방법론을 제안
+* 비동기적 다중 링크 동작 환경은 단일 링크 동작 환경에 비해 재전송에 대한 복구 속도가 빠르기 때문에 지연 시간을 줄이는 것이 가능함
+* 그럼에도 여전히, worst-case latency는 존재하며, 특히 EDCA 채널 접근 기법을 활용했을 때 상위 AC에 해당하는 데이터는 해당 지연 시간이 critical issue로 존재함
+  * critical issue의 논리적인 근거는??
+* 따라서, Asynchronous multi-link operation with EDCA 환경에서, 상위 AC에 해당하는 트래픽의 latency를 줄일 수 있도록 하는 기법을 제안
 
 ### Background
 * EDCA
