@@ -31,7 +31,9 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * IEEE 802.11be multi-link operation 환경에서 dynamic traffic allocation을 하기 위한 다양한 방법들이 존재함 [Reference](https://arxiv.org/pdf/2202.12614)
   * Single Link Less Congested Interface (SLCI)
   * Multi Link Congestion-aware Load balancing at flow arrivals (MCAA)
-  
+  * Multi Link Congestion-aware Load balancing (MCAB)
+
+
 ### Background
 * EDCA
   * EDCA parameter 설명 들어가야함
