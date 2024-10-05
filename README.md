@@ -28,7 +28,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * 따라서, Asynchronous multi-link operation with EDCA 환경에서, 상위 AC에 해당하는 트래픽의 latency를 줄일 수 있도록 하는 traffic allocation 방법론을 제안
 
 ### Related Works
-* IEEE 802.11be multi-link operation 환경에서 dynamic traffic allocation을 하기 위한 다양한 방법들이 존재함
+* IEEE 802.11be multi-link operation 환경에서 traffic allocation을 하기 위한 다양한 방법들이 존재함
 * 정책 기반 (i.e., policy-based) multi-link traffic allocation [Reference](https://arxiv.org/pdf/2202.12614)
   * Single Link Less Congested Interface (SLCI)
   * Multi Link Congestion-aware Load balancing at flow arrivals (MCAA)
