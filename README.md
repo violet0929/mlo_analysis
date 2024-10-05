@@ -48,7 +48,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 특징 언급해야함
   * 이에 따라서, 상위 AC 및 하위 AC에 해당하는 트래픽이 서로 다른 링크를 통해 전송될 수 있음
 
-### 비동기적 multi-link operation에서 상위 AC에 해당하는 mpdu의 worst case latency가 측정되는 원인 분석
+### Problem formulation: 비동기적 multi-link operation에서 상위 AC에 해당하는 mpdu의 worst case latency가 측정되는 원인 분석
 * 따라서, worst case latency가 측정되는 시나리오 기반 설명
   * (재전송 이슈)
     * BA req 및 BA을 수신 받고 재전송된 mpdu가 한번 더 손실이 발생했을 때
@@ -163,9 +163,24 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * Spatial Reuse in IEEE 802.11ax WLANs
   * Computer Communications, 2021
 
-* Multi-Link Operation in IEEE802. 11be Extremely High Throughput: A Survey
+* Multi-Link Operation in IEEE 802.11be Extremely High Throughput: A Survey
   * IEEE Access, 2024
 
+* Time-sensitive networking in IEEE 802.11 be: On the way to low-latency WiFi 7
+  * Sensors, 2021
+
+* Dynamic traffic allocation in IEEE 802.11 be multi-link WLANs
+  * IEEE Wireless Communications Letters, 2022
+ 
+* IEEE 802.11 be multi-link operation: When the best could be to use only a single interface
+  * MedComNet, 2021
+ 
+* RL meets Multi-Link Operation in IEEE 802.11 be: Multi-Headed Recurrent Soft-Actor Critic-based Traffic Allocation
+  * arXiv preprint arXiv:2303.08959., 2023
+ 
+* An experimental study of latency for IEEE 802.11 be multi-link operation
+  * IEEE International Conference on Communications, 2022
+ 
 ## Note
 * Adaptive TXOP가 말이 안되는 이유
   * 그러니까, 완벽한 논문이라는게 존재할 수 있을까?
