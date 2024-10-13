@@ -75,6 +75,10 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 100% 신뢰성을 보장할 수 없음: 여전히 다른 STA의 전송으로 인한 간섭을 막을 수 없음
     * 작은 control mpdu를 통해 동기화 과정이 가능은 하지만, 실제 상황에서 동작하기 매우 어려움 (모든 device가 해당 패킷을 인지해야하는 문제도 있음)
 
+* 빠른 재전송을 수행하기 위한 비동기적 다중 링크 동작 환경에서의 트래픽 할당 기법
+  * latency의 감소
+  * fairness를 고려한 load balancing 제공
+
 * (⭐중요) load balancing을 고려한 알고리즘
   * Equal-cost Multi-path
  
