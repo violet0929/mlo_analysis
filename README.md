@@ -84,6 +84,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * 참고할만한 개념
   * Equal-cost Multi-path
   * Network Utility Maximization
+  * https://scholar.google.com/scholar?hl=ko&as_sdt=0%2C5&q=Enhancing+Multipath+TCP+with+Fast+Retransmission&btnG=
+  * https://economics.stackexchange.com/questions/47066/why-are-utility-functions-typically-assumed-to-be-concave
+  * https://audrb1999.tistory.com/70
+  * https://scholar.google.com/scholar?hl=ko&as_sdt=0%2C5&q=Enhancing+Multipath+TCP+with+Fast+Retransmission&btnG=
+  * https://ieeexplore.ieee.org/abstract/document/7509604
  
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
