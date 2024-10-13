@@ -75,6 +75,11 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * 100% 신뢰성을 보장할 수 없음: 여전히 다른 STA의 전송으로 인한 간섭을 막을 수 없음
     * 작은 control mpdu를 통해 동기화 과정이 가능은 하지만, 실제 상황에서 동작하기 매우 어려움 (모든 device가 해당 패킷을 인지해야하는 문제도 있음)
 
+* (⭐중요) load balancing을 고려한 알고리즘
+  * Equal-cost Multi-path
+ 
+* logical queue의 필요성??
+
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
   * 2.4GHz 20MHz + 5GHz 20MHz -> simulation time 10sec
