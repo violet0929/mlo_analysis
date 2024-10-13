@@ -79,11 +79,12 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * latency의 감소
   * fairness를 고려한 load balancing 제공
 
-* (⭐중요) load balancing을 고려한 알고리즘
+* logical queue의 필요성?
+  
+* 참고할만한 개념
   * Equal-cost Multi-path
+  * Network Utility Maximization
  
-* logical queue의 필요성??
-
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
   * 2.4GHz 20MHz + 5GHz 20MHz -> simulation time 10sec
