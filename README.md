@@ -84,7 +84,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * 참고할만한 개념
   * Equal-cost Multi-path
   * Network Utility Maximization
-  * (Convex Optimization)[https://audrb1999.tistory.com/70]
+  * [Convex Optimization](https://audrb1999.tistory.com/70)
   * https://economics.stackexchange.com/questions/47066/why-are-utility-functions-typically-assumed-to-be-concave
   * 
   * https://scholar.google.com/scholar?hl=ko&as_sdt=0%2C5&q=Enhancing+Multipath+TCP+with+Fast+Retransmission&btnG=
