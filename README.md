@@ -103,36 +103,6 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * python: 3.12
 * CMake: 3.29.6
 * GCC: 11.4.0
-  
-## Task
-* Task 1. IEEE 802.11be asynchronous multi-link operation with EDCA 환경에서의 retransmission case 구분
-  * 공통 실험 환경
-    * **Topology** (1AP + 2STA)
-    * **Distance** (10m)
-    * **Channel** (2.4GHz 20MHz + 5GHz 20MHz)
-    * **Traffic flow** (uplink only)
-    * **Data rate** (Video: 100Mbit/s + Best Effort: 100Mbit/s)
-      
-  * Case 1.1. 재전송되는 패킷이 이전과 동일한 채널로 전송되는 경우
-
-    * 
-    * 자세한 분석은 Supplementary - Case 1.1. 참고
-  * Case 1.2: 재전송되는 패킷이 이전과 다른 채널로 전송되는 경우
-  * Case 2.1: 재전송되는 패킷이 내부 EDCA contention 에서 승리하여 즉시 전송되는 경우
-  * Case 2.2: 재전송되는 패킷이 내부 EDCA contention 에서 패배하여 지연되는 경우
-
-
-## Evaluation
-* Evaluation 1. latency
-  * Avg latency: 전체 mpdu에 대해 지연 시간에 대해 평균에 해당하는 시간
-  * 95th latency: 전체 mpdu에 대해 지연 시간에 대해 95번째 백분위 수에 해당하는 시간
-  * 99th latency: 전체 mpdu에 대해 지연 시간에 대해 99번째 백분위 수에 해당하는 시간
-
-  * 전체 mpdu 개수: N, 백분위수: P라 가정하면 인덱스 i는 다음과 같음 (i = P / 100 * (N - 1)) 
-  * 이후 linear interpolation을 통해 값 도출
-
-  
-## Supplementary
 
 
 ## References
