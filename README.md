@@ -60,7 +60,7 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 * 따라서, 상위 AC에 해당하는 트래픽이 EDCA 내부 경쟁없이 채널을 독점적으로 사용할 수 있음
 
 * (⭐ 중요) 독점 state를 언제 invoke하고 release 할 것인가
-  * invoke: 상위 AC에 해당하는 mpdu가 손실 발생하고, 송신된 BA Req에 대한 BA이 수신되었을 때 invoke
+  * invoke: BA timeout이 발생하고 BA Req frame이 EDCA에 해당하는 queue에 enqueue되는 시점
     * 논란의 여지가 없음
     * 구현 가능
   * release: 이전에 손실된 mpdu가 성공적으로 재전송 되었으며, 이에 대한 BA이 수신되었을 때 release
