@@ -85,17 +85,16 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
   * Equal-cost Multi-path
   * Network Utility Maximization
   * [Convex Optimization](https://audrb1999.tistory.com/70)
-  * https://economics.stackexchange.com/questions/47066/why-are-utility-functions-typically-assumed-to-be-concave
-  * 
-  * https://scholar.google.com/scholar?hl=ko&as_sdt=0%2C5&q=Enhancing+Multipath+TCP+with+Fast+Retransmission&btnG=
-  * https://ieeexplore.ieee.org/abstract/document/7509604
+
  
 ### Evaluation
 * 성능 지표 (retry ratio + 95th latency 및 99th latency 추가, 환경 5GHz 80MHz + 6GHz 80Mhz 추가)
   * 2.4GHz 20MHz + 5GHz 20MHz -> simulation time 10sec
   * 5GHz 80MHz + 6GHz 80MHz -> simulation time 5sec
- 
-  * retry가 왜 늘었는가?
+
+* 지표 참고
+  * https://arxiv.org/pdf/2205.15065
+  * https://arxiv.org/pdf/2212.12420
  
 ## Package
 * Ubuntu: 22.04
