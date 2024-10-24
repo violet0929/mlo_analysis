@@ -105,6 +105,19 @@ IEEE 802.11be multi-link operation, Enhanced Distributed Channel Access
 
 
 ## References
+* IEEE Standard for Information technology--Local and metropolitan area networks--Specific requirements--Part 11: Wireless LAN Medium Access Control (MAC) and Physical Layer (PHY) Specifications - Amendment 8: Medium Access Control (MAC) Quality of Service Enhancement
+
+* IEEE Draft Standard for Information technology--Telecommunications and information exchange between systems Local and metropolitan area networks--Specific requirements - Part 11: Wireless LAN Medium Access Control (MAC) and Physical Layer (PHY) Specifications Amendment: Enhancements for Extremely High Throughput (EHT)
+
+* Overview and performance evaluation of Wi-Fi 7
+  * IEEE Communications Standards Magazine, 2022
+
+* Enhanced Multilink Single‐Radio Operation for the Next‐Generation IEEE 802.11 BE Wi-Fi Systems
+  * Security and Communication Networks, 2022
+ 
+* Multi-link operation with enhanced synchronous channel access in IEEE 802.11 be wireless LANs: Coexistence issue and solutions
+  * Sensors, 2021
+  
 * A Comparison of Neural Networks for Wireless Channel Prediction
   * IEEE Wireless Communications, 2024
 
